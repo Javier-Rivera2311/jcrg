@@ -13,7 +13,7 @@ bool _checked = false;
   Widget build(BuildContext context) {
     return ScaffoldPage(
       header: const PageHeader(
-        title: Text('segunda screen'),
+        title: Text('Lista de tareas'),
       ),
       content: SizedBox(
         height: double.infinity,
