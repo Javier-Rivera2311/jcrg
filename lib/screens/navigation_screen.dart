@@ -43,7 +43,7 @@ class _NavigationScreenState extends State<NavigationScreen> {
           PaneItem(
             icon: const Icon(FluentIcons.a_t_p_logo),
             title: const Text('Lista de tareas'),
-            body: const PrimeraScreen(), // Contenido para la primera pantalla
+            body: TaskManagerApp (), // Contenido para la primera pantalla
           ),
           PaneItem(
             icon: const Icon(FluentIcons.text_box),
