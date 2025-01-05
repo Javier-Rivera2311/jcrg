@@ -36,7 +36,8 @@ dependencies:
   cupertino_icons: ^1.0.8
   fluent_ui: ^4.10.0
   url_launcher: ^6.1.7
-
+  intl: 0.19.0
+  file_picker: ^5.2.2
 dev_dependencies:
   flutter_test:
     sdk: flutter

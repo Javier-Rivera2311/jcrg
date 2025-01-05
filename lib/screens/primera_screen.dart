@@ -21,7 +21,9 @@ class TaskManagerScreen extends StatefulWidget {
 }
 
 class _TaskManagerScreenState extends State<TaskManagerScreen> {
-  final String filePath = r'\\desktop-co5hnd9\SERVIDOR B\Informatica\tareas\tasks.json';
+  //final String filePath = r'\\desktop-co5hnd9\SERVIDOR B\Informatica\tareas\tasks.json';
+  final String filePath = r'C:\Users\javie\OneDrive\Desktop\tests flutter\tareas\tasks.json';
+  
   List<dynamic> priorities = [];
   final TextEditingController _taskController = TextEditingController();
   final TextEditingController _assigneeController = TextEditingController();
