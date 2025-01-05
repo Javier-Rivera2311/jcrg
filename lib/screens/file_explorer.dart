@@ -4,6 +4,7 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter/material.dart' as MaterialColors;
 
 class FileExplorer extends StatefulWidget {
   const FileExplorer({super.key});
@@ -310,84 +311,118 @@ commandBar: Wrap(
               onChanged: _filterFiles,
             ),
           ),
-          Expanded(
-            child: ListView.builder(
-              itemCount: _filteredFiles.length,
-              itemBuilder: (context, index) {
-                final file = _filteredFiles[index];
-                final fileName = file.path.split(Platform.pathSeparator).last;
-                final uploadedAt = _fileRegistry[file.path] != null
-                    ? DateFormat('dd-MM-yyyy HH:mm').format(_fileRegistry[file.path]!)
-                    : 'No registrado';
+Expanded(
+  child: ListView.builder(
+    itemCount: _filteredFiles.length,
+    itemBuilder: (context, index) {
+      final file = _filteredFiles[index];
+      final fileName = file.path.split(Platform.pathSeparator).last;
+      final fileExtension = fileName.split('.').last.toLowerCase();
+      final uploadedAt = _fileRegistry[file.path] != null
+          ? DateFormat('dd-MM-yyyy HH:mm').format(_fileRegistry[file.path]!)
+          : 'No registrado';
 
-                return Row(
-                  children: [
-                    Checkbox(
-                      checked: _selectedFiles.contains(file.path),
-                      onChanged: (isSelected) {
-                        setState(() {
-                          if (isSelected ?? false) {
-                            _selectedFiles.add(file.path);
-                          } else {
-                            _selectedFiles.remove(file.path);
-                          }
-                        });
-                      },
+// Determinar color e ícono por tipo de archivo
+// Determinar color e ícono por tipo de archivo
+final Color fileColor = {
+  'docx': MaterialColors.Colors.blue,
+  'pdf': MaterialColors.Colors.red,
+  'xlsx': MaterialColors.Colors.green,
+  'txt': MaterialColors.Colors.grey,
+  'jpg': MaterialColors.Colors.orange,
+  'png': MaterialColors.Colors.purple,
+  'dwg': MaterialColors.Colors.cyan, // DWG de AutoCAD
+  'dxf': MaterialColors.Colors.teal,       // DXF de AutoCAD
+}[fileExtension] ?? MaterialColors.Colors.black;
+
+
+final IconData fileIcon = {
+  'docx': FluentIcons.page, // Icono genérico para Word
+  'pdf': FluentIcons.pdf,
+  'xlsx': FluentIcons.excel_document,
+  'txt': FluentIcons.text_document,
+  'jpg': FluentIcons.photo2,
+  'png': FluentIcons.photo2,
+  'dwg': FluentIcons.auto_racing, // DWG
+  'dxf': FluentIcons.settings, // Reemplazo para DXF
+}[fileExtension] ?? FluentIcons.page;
+      return Row(
+        children: [
+          Checkbox(
+            checked: _selectedFiles.contains(file.path),
+            onChanged: (isSelected) {
+              setState(() {
+                if (isSelected ?? false) {
+                  _selectedFiles.add(file.path);
+                } else {
+                  _selectedFiles.remove(file.path);
+                }
+              });
+            },
+          ),
+          Expanded(
+            child: HoverButton(
+              onPressed: () {
+                if (file is Directory) {
+                  _listFiles(file.path);
+                } else if (file is File) {
+                  _openFile(file);
+                }
+              },
+              builder: (context, states) => Container(
+                padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(
+                      color: MaterialColors.Colors.grey[200]!,
+                      width: 0.5,
                     ),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      fileIcon,
+                      color: fileColor,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 10),
                     Expanded(
-                      child: HoverButton(
-                        onPressed: () {
-                          if (file is Directory) {
-                            _listFiles(file.path);
-                          } else if (file is File) {
-                            _openFile(file);
-                          }
-                        },
-                        builder: (context, states) => Container(
-                          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-                          decoration: BoxDecoration(
-                            border: Border(
-                              bottom: BorderSide(
-                                color: Colors.grey[200]!,
-                                width: 0.5,
-                              ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            fileName,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: fileColor,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          Text(
+                            'Subido el: $uploadedAt',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: MaterialColors.Colors.grey,
                             ),
                           ),
-                          child: Row(
-                            children: [
-                              Icon(file is Directory
-                                  ? FluentIcons.folder_open
-                                  : FluentIcons.page),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      fileName,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    Text(
-                                      'Subido el: $uploadedAt',
-                                      style: const TextStyle(fontSize: 12, color: Colors.grey),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              IconButton(
-                                icon: const Icon(FluentIcons.delete),
-                                onPressed: () => _deleteFile(file),
-                              ),
-                            ],
-                          ),
-                        ),
+                        ],
                       ),
                     ),
+                    IconButton(
+                      icon: const Icon(FluentIcons.delete),
+                      onPressed: () => _deleteFile(file),
+                    ),
                   ],
-                );
-              },
+                ),
+              ),
             ),
           ),
+        ],
+      );
+    },
+  ),
+),
         ],
       ),
     );
