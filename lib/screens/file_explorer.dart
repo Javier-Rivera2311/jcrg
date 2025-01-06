@@ -14,7 +14,7 @@ class FileExplorer extends StatefulWidget {
 }
 
 class _FileExplorerState extends State<FileExplorer> {
-  String _currentPath = r'\\desktop-co5hnd9\SERVIDOR B\01.- PROYECTOS';
+  String _currentPath = r'\\desktop-co5hnd9\SERVIDOR B';
   List<FileSystemEntity> _files = [];
   List<FileSystemEntity> _filteredFiles = [];
   final Map<String, DateTime> _fileRegistry = {}; // Registro de archivos con fechas
