@@ -1,10 +1,10 @@
 
 import 'package:jcrg/screens/cuarta_screen.dart';
 import 'package:jcrg/screens/file_explorer.dart';
-import 'package:jcrg/screens/primera_screen.dart';
+import 'package:jcrg/screens/tasks_screen.dart';
 //import 'package:jcrg/screens/segunda_screen.dart';
 import 'package:fluent_ui/fluent_ui.dart';
-import 'package:jcrg/screens/tercera_screen.dart';
+import 'package:jcrg/screens/projects_screen.dart';
 
 class NavigationScreen extends StatefulWidget {
   const NavigationScreen({super.key});
@@ -46,13 +46,13 @@ class _NavigationScreenState extends State<NavigationScreen> {
           ),
           PaneItem(
             icon: const Icon(FluentIcons.text_box),
-            title: const Text('Proyectos'),
+            title: const Text('Servidor B'),
             body: FileExplorer(), // Contenido para la segunda pantalla
           ),
           PaneItem(
             icon: const Icon(FluentIcons.activate_orders),
-            title: const Text('Tercera Screen'),
-            body: const TerceraScreen(), // Contenido para la segunda pantalla
+            title: const Text('Proyectos'),
+            body: const ProjectManager(), // Contenido para la segunda pantalla
           ),
           PaneItem(
             icon: const Icon(FluentIcons.accept_medium),

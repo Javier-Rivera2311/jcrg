@@ -14,11 +14,11 @@ class FileExplorer extends StatefulWidget {
 }
 
 class _FileExplorerState extends State<FileExplorer> {
-  String _currentPath = r'C:\Users\javie\OneDrive\Desktop\tests flutter\archivos';
+  String _currentPath = r'\\desktop-co5hnd9\SERVIDOR B\01.- PROYECTOS';
   List<FileSystemEntity> _files = [];
   List<FileSystemEntity> _filteredFiles = [];
   final Map<String, DateTime> _fileRegistry = {}; // Registro de archivos con fechas
-  final String _registryPath = r'C:\Users\javie\OneDrive\Desktop\tests flutter\archivos\registry.json';
+  final String _registryPath = r'\\desktop-co5hnd9\SERVIDOR B\Informatica\flutter\tareas\registry.json';
   final List<String> _selectedFiles = []; // Lista de archivos seleccionados para mover
   final TextEditingController _searchController = TextEditingController(); // Controlador para el buscador
 
@@ -50,23 +50,45 @@ class _FileExplorerState extends State<FileExplorer> {
     registryFile.writeAsStringSync(jsonEncode(jsonRegistry));
   }
 
-  void _listFiles(String path) {
-    final directory = Directory(path);
-    try {
-      final files = directory.listSync();
-      setState(() {
-        _currentPath = path;
-        _files = files;
-        _filteredFiles = files;
+void _listFiles(String path) {
+  final directory = Directory(path);
+  try {
+    final files = directory.listSync();
+    setState(() {
+      _currentPath = path;
 
-        // Eliminar del registro los archivos que ya no existen
-        _fileRegistry.removeWhere((key, value) => !File(key).existsSync());
-        _saveRegistry(); // Guardar cambios en el registro
-      });
-    } catch (e) {
-      _showMessage('Error al acceder al directorio: $e');
-    }
+      // Filtrar archivos y carpetas ocultos o del sistema
+      _files = files.where((file) {
+        final fileName = file.path.split(Platform.pathSeparator).last;
+        // Excluir archivos o carpetas ocultos y aquellos específicos como System Volume Information
+        if (fileName.startsWith(r'$') || fileName == 'System Volume Information') {
+          return false;
+        }
+
+        // En sistemas Windows, se podría verificar si es un archivo oculto
+        if (file is File || file is Directory) {
+          try {
+            final attributes = FileStat.statSync(file.path);
+            return !(attributes.modeString().contains('hidden') || attributes.modeString().contains('system'));
+          } catch (_) {
+            return true; // En caso de error, asumimos que no es oculto
+          }
+        }
+
+        return true;
+      }).toList();
+
+      _filteredFiles = _files;
+
+      // Eliminar del registro los archivos que ya no existen
+      _fileRegistry.removeWhere((key, value) => !File(key).existsSync());
+      _saveRegistry(); // Guardar cambios en el registro
+    });
+  } catch (e) {
+    _showMessage('Error al acceder al directorio: $e');
   }
+}
+
 
   void _showMessage(String message) {
     showDialog(
