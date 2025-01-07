@@ -8,30 +8,17 @@ class Contact extends StatefulWidget {
 }
 
 class _ContactState extends State<Contact> {
-  bool _checked = false;
 
   @override
   Widget build(BuildContext context) {
     return ScaffoldPage(
       header: const PageHeader(
-        title: Text('Contact'),
+        title: Text('Contactos'),
       ),
       content: SizedBox(
         height: double.infinity,
         width: double.infinity,
-        child: Column(
-          children: [
-            const SizedBox(height: 15),
-            Checkbox(
-              checked: _checked,
-              onChanged: (v) {
-                setState(() {
-                  _checked = v!;
-                });
-              },
-            )
-          ],
-        ),
+
       ),
     );
   }
