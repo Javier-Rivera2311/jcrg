@@ -1,5 +1,5 @@
 
-import 'package:jcrg/screens/cuarta_screen.dart';
+import 'package:jcrg/screens/contact.dart';
 import 'package:jcrg/screens/file_explorer.dart';
 import 'package:jcrg/screens/tasks_screen.dart';
 //import 'package:jcrg/screens/segunda_screen.dart';
@@ -40,24 +40,24 @@ class _NavigationScreenState extends State<NavigationScreen> {
         },
         items: [
           PaneItem(
-            icon: const Icon(FluentIcons.a_t_p_logo),
+            icon: const Icon(FluentIcons.task_logo),
             title: const Text('Lista de tareas'),
             body: TaskManagerApp (), // Contenido para la primera pantalla
           ),
           PaneItem(
-            icon: const Icon(FluentIcons.text_box),
+            icon: const Icon(FluentIcons.cloud),
             title: const Text('Servidor B'),
             body: FileExplorer(), // Contenido para la segunda pantalla
           ),
           PaneItem(
-            icon: const Icon(FluentIcons.activate_orders),
+            icon: const Icon(FluentIcons.calendar),
             title: const Text('Proyectos'),
             body: const ProjectManager(), // Contenido para la segunda pantalla
           ),
           PaneItem(
-            icon: const Icon(FluentIcons.accept_medium),
-            title: const Text('Cuarta Screen'),
-            body: const CuartaScreen(), // Contenido para la segunda pantalla
+            icon: const Icon(FluentIcons.contact),
+            title: const Text('Contactos'),
+            body: const  Contact(), // Contenido para la segunda pantalla
           ),
         ],
       ),

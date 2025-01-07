@@ -333,7 +333,7 @@ Expanded(
                       decoration: BoxDecoration(
                         border: Border(
                           bottom: BorderSide(
-                            color: Colors.grey[200]!,
+                            color: Colors.grey[200],
                           ),
                         ),
                         color: states.isHovering ? Colors.grey[30] : null,

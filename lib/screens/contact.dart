@@ -1,20 +1,20 @@
 import 'package:fluent_ui/fluent_ui.dart';
 
-class CuartaScreen extends StatefulWidget {
-  const CuartaScreen({super.key});
+class Contact extends StatefulWidget {
+  const Contact({super.key});
 
   @override
-  State<CuartaScreen> createState() => _CuartaScreenState();
+  State<Contact> createState() => _ContactState();
 }
 
-class _CuartaScreenState extends State<CuartaScreen> {
+class _ContactState extends State<Contact> {
   bool _checked = false;
 
   @override
   Widget build(BuildContext context) {
     return ScaffoldPage(
       header: const PageHeader(
-        title: Text('cuarta screen'),
+        title: Text('Contact'),
       ),
       content: SizedBox(
         height: double.infinity,
