@@ -40,7 +40,7 @@ class _NavigationScreenState extends State<NavigationScreen> {
         },
         items: [
           PaneItem(
-            icon: const Icon(FluentIcons.task_logo),
+            icon: const Icon(FluentIcons.task_list),
             title: const Text('Lista de tareas'),
             body: TaskManagerApp (), // Contenido para la primera pantalla
           ),
@@ -50,12 +50,12 @@ class _NavigationScreenState extends State<NavigationScreen> {
             body: FileExplorer(), // Contenido para la segunda pantalla
           ),
           PaneItem(
-            icon: const Icon(FluentIcons.calendar),
+            icon: const Icon(FluentIcons.project_management),
             title: const Text('Proyectos'),
             body: const ProjectManager(), // Contenido para la segunda pantalla
           ),
           PaneItem(
-            icon: const Icon(FluentIcons.contact),
+            icon: const Icon(FluentIcons.contact_list),
             title: const Text('Contactos'),
             body: const  Contact(), // Contenido para la segunda pantalla
           ),
