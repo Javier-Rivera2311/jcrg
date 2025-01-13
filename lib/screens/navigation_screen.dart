@@ -57,7 +57,7 @@ class _NavigationScreenState extends State<NavigationScreen> {
           PaneItem(
             icon: const Icon(FluentIcons.contact_list),
             title: const Text('Contactos'),
-            body: const  Contact(), // Contenido para la segunda pantalla
+            body: ContactManagerApp(), // Contenido para la segunda pantalla
           ),
         ],
       ),
