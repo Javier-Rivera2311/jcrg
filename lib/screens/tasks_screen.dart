@@ -10,6 +10,7 @@ class TaskManagerApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       home: TaskManagerScreen(),
       theme: ThemeData(
         scaffoldBackgroundColor: Colors.grey[200],
@@ -209,7 +210,6 @@ void _editTask(int priorityIndex, int taskIndex) {
 }
 
 
-@override
 Widget build(BuildContext context) {
   return Scaffold(
     appBar: AppBar(
@@ -255,9 +255,13 @@ Widget build(BuildContext context) {
               ),
               const SizedBox(height: 8),
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  Text('Fecha límite: ${_selectedDate.toLocal().toString().split(' ')[0]}'),
+                  Text(
+                    'Fecha límite: ${_selectedDate.toLocal().toString().split(' ')[0]}',
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                  const SizedBox(width: 8),
                   IconButton(
                     icon: const Icon(Icons.calendar_today),
                     onPressed: () {
@@ -270,9 +274,28 @@ Widget build(BuildContext context) {
                   ),
                 ],
               ),
-              ElevatedButton(
-                onPressed: _addTask,
-                child: const Text('Añadir Tarea'),
+              const SizedBox(height: 16),
+              Center(
+                child: Theme(
+                  data: Theme.of(context).copyWith(
+                    elevatedButtonTheme: ElevatedButtonThemeData(
+                      style: ButtonStyle(
+                        backgroundColor: MaterialStateProperty.all(const Color.fromARGB(255, 76, 78, 175)), // Color de fondo personalizado
+                        foregroundColor: MaterialStateProperty.all(Colors.white), // Color del texto
+                        padding: MaterialStateProperty.all(
+                          const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        ),
+                        textStyle: MaterialStateProperty.all(
+                          const TextStyle(fontSize: 16),
+                        ),
+                      ),
+                    ),
+                  ),
+                  child: ElevatedButton(
+                    onPressed: _addTask,
+                    child: const Text('Añadir Tarea'),
+                  ),
+                ),
               ),
             ],
           ),

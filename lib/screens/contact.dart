@@ -10,9 +10,10 @@ class ContactManagerApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       home: ContactManagerScreen(),
       theme: ThemeData(
-        scaffoldBackgroundColor:Colors.grey[200],
+        scaffoldBackgroundColor: Colors.grey[200],
       ),
     );
   }
@@ -24,7 +25,7 @@ class ContactManagerScreen extends StatefulWidget {
 }
 
 class _ContactManagerScreenState extends State<ContactManagerScreen> {
-  final String filePath = r'\\desktop-co5hnd9\SERVIDOR B\Informatica\flutter\tareas\contact.json';
+  final String filePath = r'\\desktop-co5hnd9\\SERVIDOR B\\Informatica\\flutter\\tareas\\contact.json';
   List<Map<String, String>> _contacts = [];
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = "";
@@ -35,42 +36,40 @@ class _ContactManagerScreenState extends State<ContactManagerScreen> {
     _loadContactsFromFile();
   }
 
-Future<void> _loadContactsFromFile() async {
-  try {
-    final file = File(filePath);
-    if (await file.exists()) {
-      final content = await file.readAsString();
-      final List<dynamic> jsonData = json.decode(content);
-      setState(() {
-        _contacts = jsonData.map((e) => Map<String, String>.from(e)).toList();
-      });
-    } else {
-      print("El archivo no existe, creando uno vacío.");
-      await _saveContactsToFile(); // Crear un archivo vacío si no existe
+  Future<void> _loadContactsFromFile() async {
+    try {
+      final file = File(filePath);
+      if (await file.exists()) {
+        final content = await file.readAsString();
+        final List<dynamic> jsonData = json.decode(content);
+        setState(() {
+          _contacts = jsonData.map((e) => Map<String, String>.from(e)).toList();
+        });
+      } else {
+        print("El archivo no existe, creando uno vacío.");
+        await _saveContactsToFile(); // Crear un archivo vacío si no existe
+      }
+    } catch (e) {
+      print('Error al leer el archivo: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al cargar contactos: $e')),
+      );
     }
-  } catch (e) {
-    print('Error al leer el archivo: $e');
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Error al cargar contactos: $e')),
-    );
   }
-}
 
-
-Future<void> _saveContactsToFile() async {
-  try {
-    final file = File(filePath);
-    final jsonContacts = json.encode(_contacts);
-    await file.writeAsString(jsonContacts);
-    print("Contactos guardados en $filePath");
-  } catch (e) {
-    print('Error al guardar contactos: $e');
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Error al guardar contactos: $e')),
-    );
+  Future<void> _saveContactsToFile() async {
+    try {
+      final file = File(filePath);
+      final jsonContacts = json.encode(_contacts);
+      await file.writeAsString(jsonContacts);
+      print("Contactos guardados en $filePath");
+    } catch (e) {
+      print('Error al guardar contactos: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al guardar contactos: $e')),
+      );
+    }
   }
-}
-
 
   void _addContact(String name, String email, String phone) {
     setState(() {
@@ -101,7 +100,8 @@ Future<void> _saveContactsToFile() async {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Gestión de Contactos'),
+        title: const Text('Gestión de Contactos', style: TextStyle(color: Colors.white)),
+        backgroundColor: const Color.fromARGB(255, 107, 135, 182),
       ),
       body: Column(
         children: [
@@ -122,47 +122,64 @@ Future<void> _saveContactsToFile() async {
             ),
           ),
           Expanded(
-            child: ListView.builder(
-              itemCount: filteredContacts.length,
-              itemBuilder: (context, index) {
-                final contact = filteredContacts[index];
-                return Card(
-                  margin: const EdgeInsets.all(8.0),
-                  child: ListTile(
-                    title: Text(contact['name']!),
-                    subtitle: Text("${contact['email']}\n${contact['phone']}"),
-                    isThreeLine: true,
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.edit, color: Colors.blue),
-                          onPressed: () {
-                            _showContactDialog(
-                              isEditing: true,
-                              index: index,
-                              contact: contact,
-                            );
-                          },
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.delete, color: Colors.red),
-                          onPressed: () => _deleteContact(index),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
+            child: SingleChildScrollView(
+              child: DataTable(
+                columns: const [
+                  DataColumn(label: Text('Nombre y Apellido')),
+                  DataColumn(label: Text('Correo')),
+                  DataColumn(label: Text('Teléfono')),
+                  DataColumn(label: Text('Editar')),
+                  DataColumn(label: Text('Borrar')),
+                ],
+                rows: filteredContacts.map((contact) {
+                  final index = _contacts.indexOf(contact);
+                  return DataRow(cells: [
+                    DataCell(Text(contact['name']!)),
+                    DataCell(Text(contact['email']!)),
+                    DataCell(Text(contact['phone']!)),
+                    DataCell(IconButton(
+                      icon: const Icon(Icons.edit, color: Colors.blue),
+                      onPressed: () {
+                        _showContactDialog(
+                          isEditing: true,
+                          index: index,
+                          contact: contact,
+                        );
+                      },
+                    )),
+                    DataCell(IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.red),
+                      onPressed: () => _deleteContact(index),
+                    )),
+                  ]);
+                }).toList(),
+              ),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: ElevatedButton(
-              onPressed: () => _showContactDialog(isEditing: false),
-              child: const Text('Añadir Contacto'),
-            ),
+Padding(
+  padding: const EdgeInsets.all(8.0),
+  child: Theme(
+    data: Theme.of(context).copyWith(
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ButtonStyle(
+          backgroundColor: MaterialStateProperty.all(const Color.fromARGB(255, 76, 78, 175)), // Cambia el color de fondo
+          foregroundColor: MaterialStateProperty.all(Colors.white), // Cambia el color del texto
+          padding: MaterialStateProperty.all(
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 12), // Ajusta el tamaño del botón
           ),
+          textStyle: MaterialStateProperty.all(
+            const TextStyle(fontSize: 16), // Ajusta el estilo del texto
+          ),
+        ),
+      ),
+    ),
+    child: ElevatedButton(
+      onPressed: () => _showContactDialog(isEditing: false),
+      child: const Text('Añadir Contacto'),
+    ),
+  ),
+),
+
         ],
       ),
     );
