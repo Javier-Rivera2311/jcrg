@@ -127,100 +127,87 @@ class _TaskManagerScreenState extends State<TaskManagerScreen> {
     }
   }
 
-  void _editTask(int priorityIndex, int taskIndex) {
-    final task = priorities[priorityIndex]['tasks'][taskIndex];
-    final TextEditingController editTaskController =
-        TextEditingController(text: task['title']);
-    final TextEditingController editAssigneeController =
-        TextEditingController(text: task['assignee']);
-    DateTime editDate = DateTime.parse(task['dueDate']);
+void _editTask(int priorityIndex, int taskIndex) {
+  final task = priorities[priorityIndex]['tasks'][taskIndex];
+  final TextEditingController editTaskController =
+      TextEditingController(text: task['title']);
+  final TextEditingController editAssigneeController =
+      TextEditingController(text: task['assignee']);
+  DateTime editDate = task['dueDate'] != null
+      ? DateTime.parse(task['dueDate'])
+      : DateTime.now(); // Usa la fecha actual si no existe dueDate
 
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text('Editar Tarea'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: editTaskController,
-                decoration: InputDecoration(labelText: 'Título de la tarea'),
-              ),
-              SizedBox(height: 8),
-              TextField(
-                controller: editAssigneeController,
-                decoration: InputDecoration(labelText: 'Encargado'),
-              ),
-              SizedBox(height: 8),
-Row(
-  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  children: [
-    Expanded(
-      child: GestureDetector(
-        onTap: () {
-          _pickDate(context, (pickedDate) {
-            setState(() {
-              _selectedDate = pickedDate;
-            });
-          });
-        },
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            border: Border.all(color: Colors.grey),
-            borderRadius: BorderRadius.circular(5),
-          ),
-          child: Text(
-            'Fecha límite: ${_selectedDate.toLocal().toString().split(' ')[0]}',
-            style: const TextStyle(
-              fontSize: 16,
-              color: Colors.black,
+  showDialog(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: const Text('Editar Tarea'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: editTaskController,
+              decoration: const InputDecoration(labelText: 'Título de la tarea'),
             ),
-          ),
-        ),
-      ),
-    ),
-    const SizedBox(width: 8), // Espacio entre la fecha y el icono
-    IconButton(
-      icon: const Icon(Icons.calendar_today),
-      onPressed: () {
-        _pickDate(context, (pickedDate) {
-          setState(() {
-            _selectedDate = pickedDate;
-          });
-        });
-      },
-    ),
-  ],
-),
-
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text('Cancelar'),
+            const SizedBox(height: 8),
+            TextField(
+              controller: editAssigneeController,
+              decoration: const InputDecoration(labelText: 'Encargado(a)'),
             ),
-            TextButton(
-              onPressed: () {
-                _updateTask(
-                  priorityIndex,
-                  taskIndex,
-                  editTaskController.text,
-                  editAssigneeController.text,
-                  editDate,
+            const SizedBox(height: 8),
+            GestureDetector(
+              onTap: () async {
+                final DateTime? pickedDate = await showDatePicker(
+                  context: context,
+                  initialDate: editDate,
+                  firstDate: DateTime(2000),
+                  lastDate: DateTime(2100),
                 );
-                Navigator.pop(context);
+                if (pickedDate != null) {
+                  setState(() {
+                    editDate = pickedDate; // Actualiza la fecha seleccionada
+                  });
+                }
               },
-              child: Text('Guardar'),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  border: Border.all(color: Colors.grey[400]!),
+                  borderRadius: BorderRadius.circular(5),
+                ),
+                child: Text(
+                  'Fecha límite: ${editDate.toLocal().toString().split(' ')[0]}',
+                  style: const TextStyle(fontSize: 16, color: Colors.black),
+                ),
+              ),
             ),
           ],
-        );
-      },
-    );
-  }
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () {
+              _updateTask(
+                priorityIndex,
+                taskIndex,
+                editTaskController.text,
+                editAssigneeController.text,
+                editDate, // Usa la fecha actualizada
+              );
+              Navigator.pop(context);
+            },
+            child: const Text('Guardar'),
+          ),
+        ],
+      );
+    },
+  );
+}
+
 
 @override
 Widget build(BuildContext context) {
@@ -312,49 +299,71 @@ Widget build(BuildContext context) {
                     final task = entry.value;
                     final dueDate = DateTime.parse(task['dueDate']);
 
-                    return ListTile(
-                      contentPadding: const EdgeInsets.all(8),
-                      title: Text(task['title']),
-                      subtitle: Row(
-                        children: [
-                          Expanded(child: Text('Encargado: ${task['assignee']}')),
-                          Text(
-                            'Fecha límite: ${dueDate.toLocal().toString().split(' ')[0]}',
-                            style: const TextStyle(color: Colors.grey),
-                          ),
-                        ],
-                      ),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          DropdownButton<String>(
-                            value: task['status'],
-                            onChanged: (newStatus) {
-                              setState(() {
-                                task['status'] = newStatus!;
-                                _saveTasks();
-                              });
-                            },
-                            items: ['Pendiente', 'En progreso', 'Completada'].map((status) {
-                              return DropdownMenuItem(
-                                value: status,
-                                child: Text(
-                                  status,
-                                  style: TextStyle(color: _getStatusColor(status)),
+                    // Modificado aquí:
+                    return Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      task['title'],
+                                      style: const TextStyle(fontWeight: FontWeight.bold),
+                                    ),
+                                    Row(
+                                      children: [
+                                        Text('Encargado: ${task['assignee']}'),
+                                        const SizedBox(width: 10),
+                                        Text(
+                                          'Fecha límite: ${dueDate.toLocal().toString().split(' ')[0]}',
+                                          style: const TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
                                 ),
-                              );
-                            }).toList(),
+                              ),
+                              Row(
+                                children: [
+                                  DropdownButton<String>(
+                                    value: task['status'],
+                                    onChanged: (newStatus) {
+                                      setState(() {
+                                        task['status'] = newStatus!;
+                                        _saveTasks();
+                                      });
+                                    },
+                                    items: ['Pendiente', 'En progreso', 'Completada'].map((status) {
+                                      return DropdownMenuItem(
+                                        value: status,
+                                        child: Text(
+                                          status,
+                                          style: TextStyle(color: _getStatusColor(status)),
+                                        ),
+                                      );
+                                    }).toList(),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  IconButton(
+                                    icon: const Icon(Icons.edit, color: Colors.blue),
+                                    onPressed: () => _editTask(priorityIndex, taskIndex),
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.delete, color: Colors.red),
+                                    onPressed: () => _deleteTask(priorityIndex, taskIndex),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
-                          IconButton(
-                            icon: const Icon(Icons.edit, color: Colors.blue),
-                            onPressed: () => _editTask(priorityIndex, taskIndex),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.delete, color: Colors.red),
-                            onPressed: () => _deleteTask(priorityIndex, taskIndex),
-                          ),
-                        ],
-                      ),
+                        ),
+                        const Divider(thickness: 1, height: 1, color: Colors.grey), // Línea horizontal
+                      ],
                     );
                   }).toList(),
                 ),
