@@ -208,12 +208,12 @@ Padding(
                 controller: nameController,
                 decoration: const InputDecoration(labelText: 'Nombre y Apellido'),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 10),
               TextField(
                 controller: emailController,
                 decoration: const InputDecoration(labelText: 'Correo'),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 10),
               TextField(
                 controller: phoneController,
                 decoration: const InputDecoration(labelText: 'Teléfono'),

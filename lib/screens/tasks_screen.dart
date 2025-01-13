@@ -1,12 +1,14 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 void main() {
   runApp(TaskManagerApp());
 }
 
 class TaskManagerApp extends StatelessWidget {
+  
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -208,7 +210,9 @@ void _editTask(int priorityIndex, int taskIndex) {
     },
   );
 }
-
+String _formatDate(DateTime date) {
+  return DateFormat('dd-MM-yyyy').format(date); // Formato día-mes-año
+}
 
 Widget build(BuildContext context) {
   return Scaffold(
@@ -258,7 +262,7 @@ Widget build(BuildContext context) {
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   Text(
-                    'Fecha límite: ${_selectedDate.toLocal().toString().split(' ')[0]}',
+                    'Fecha límite: ${_formatDate(_selectedDate)}', // Usar _formatDate aquí
                     style: const TextStyle(fontSize: 16),
                   ),
                   const SizedBox(width: 8),
@@ -280,7 +284,7 @@ Widget build(BuildContext context) {
                   data: Theme.of(context).copyWith(
                     elevatedButtonTheme: ElevatedButtonThemeData(
                       style: ButtonStyle(
-                        backgroundColor: MaterialStateProperty.all(const Color.fromARGB(255, 76, 78, 175)), // Color de fondo personalizado
+                        backgroundColor: MaterialStateProperty.all(Colors.green), // Color de fondo personalizado
                         foregroundColor: MaterialStateProperty.all(Colors.white), // Color del texto
                         padding: MaterialStateProperty.all(
                           const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -322,7 +326,6 @@ Widget build(BuildContext context) {
                     final task = entry.value;
                     final dueDate = DateTime.parse(task['dueDate']);
 
-                    // Modificado aquí:
                     return Column(
                       children: [
                         Padding(
@@ -343,7 +346,7 @@ Widget build(BuildContext context) {
                                         Text('Encargado: ${task['assignee']}'),
                                         const SizedBox(width: 10),
                                         Text(
-                                          'Fecha límite: ${dueDate.toLocal().toString().split(' ')[0]}',
+                                          'Fecha límite: ${_formatDate(dueDate)}', // Usar _formatDate aquí
                                           style: const TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
                                         ),
                                       ],
