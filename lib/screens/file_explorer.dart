@@ -326,64 +326,60 @@ void _listFiles(String path) {
             ),
           ),
 
-  Expanded(
+Expanded(
   child: ListView.builder(
     itemCount: _filteredFiles.length,
     itemBuilder: (context, index) {
       final file = _filteredFiles[index];
       final fileName = file.path.split(Platform.pathSeparator).last;
-
-      // Formatear fecha de última modificación
-      final lastModified = file.statSync().modified;
-      final lastModifiedFormatted = DateFormat('dd-MM-yyyy HH:mm').format(lastModified);
-
-      // Fecha de subida
       final uploadedAt = _fileRegistry[file.path] != null
           ? DateFormat('dd-MM-yyyy HH:mm').format(_fileRegistry[file.path]!)
           : 'No registrado';
+      final lastModified = file.statSync().modified;
+      final lastModifiedFormatted = DateFormat('dd-MM-yyyy HH:mm').format(lastModified);
 
-      return ListTile(
-        leading: Checkbox(
-          value: _selectedFiles.contains(file.path),
-          onChanged: (isSelected) {
-            setState(() {
-              if (isSelected ?? false) {
-                _selectedFiles.add(file.path);
-              } else {
-                _selectedFiles.remove(file.path);
+      return Column(
+        children: [
+          ListTile(
+            leading: Checkbox(
+              value: _selectedFiles.contains(file.path),
+              onChanged: (isSelected) {
+                setState(() {
+                  if (isSelected ?? false) {
+                    _selectedFiles.add(file.path);
+                  } else {
+                    _selectedFiles.remove(file.path);
+                  }
+                });
+              },
+            ),
+            title: Text(fileName),
+            subtitle: Row(
+              children: [
+                Text('Subido el: $uploadedAt'),
+                const SizedBox(width: 16),
+                Text('Modificado el: $lastModifiedFormatted'),
+              ],
+            ),
+            trailing: IconButton(
+              icon: const Icon(Icons.delete, color: Colors.red),
+              onPressed: () => _deleteFile(file),
+            ),
+            onTap: () {
+              if (file is Directory) {
+                _listFiles(file.path);
+              } else if (file is File) {
+                _openFile(file);
               }
-            });
-          },
-        ),
-        title: Text(fileName),
-        subtitle: Row(
-          children: [
-            Text(
-              'Subido el: $uploadedAt',
-              style: const TextStyle(fontSize: 12),
-            ),
-            const SizedBox(width: 16), // Espaciado horizontal
-            Text(
-              'Modificado el: $lastModifiedFormatted',
-              style: const TextStyle(fontSize: 12),
-            ),
-          ],
-        ),
-        trailing: IconButton(
-          icon: const Icon(Icons.delete),
-          onPressed: () => _deleteFile(file),
-        ),
-        onTap: () {
-          if (file is Directory) {
-            _listFiles(file.path);
-          } else if (file is File) {
-            _openFile(file);
-          }
-        },
+            },
+          ),
+          const Divider(thickness: 1, height: 1, color: Colors.grey),
+        ],
       );
     },
   ),
 ),
+
           
         ],
       ),
