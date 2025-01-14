@@ -1,10 +1,9 @@
 import 'dart:io';
 import 'dart:convert'; // Para manejar JSON
-import 'package:fluent_ui/fluent_ui.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:intl/intl.dart';
-import 'package:flutter/material.dart' as MaterialColors;
+import 'package:flutter/material.dart';
 
 class FileExplorer extends StatefulWidget {
   const FileExplorer({super.key});
@@ -57,24 +56,16 @@ void _listFiles(String path) {
     setState(() {
       _currentPath = path;
 
-      // Filtrar archivos y carpetas ocultos o del sistema
+      // Filtrar archivos y carpetas ocultos o específicos
       _files = files.where((file) {
         final fileName = file.path.split(Platform.pathSeparator).last;
-        // Excluir archivos o carpetas ocultos y aquellos específicos como System Volume Information
-        if (fileName.startsWith(r'$') || fileName == 'System Volume Information') {
+        // Excluir archivos o carpetas no deseados
+        if (fileName.startsWith(r'$') || 
+            fileName == 'System Volume Information' || 
+            fileName == ".BIN"  || fileName =="desktop.ini" )
+            {
           return false;
         }
-
-        // En sistemas Windows, se podría verificar si es un archivo oculto
-        if (file is File || file is Directory) {
-          try {
-            final attributes = FileStat.statSync(file.path);
-            return !(attributes.modeString().contains('hidden') || attributes.modeString().contains('system'));
-          } catch (_) {
-            return true; // En caso de error, asumimos que no es oculto
-          }
-        }
-
         return true;
       }).toList();
 
@@ -93,11 +84,11 @@ void _listFiles(String path) {
   void _showMessage(String message) {
     showDialog(
       context: context,
-      builder: (context) => ContentDialog(
+      builder: (context) => AlertDialog(
         title: const Text('Mensaje'),
         content: Text(message),
         actions: [
-          Button(
+          TextButton(
             child: const Text('Aceptar'),
             onPressed: () => Navigator.pop(context),
           ),
@@ -106,7 +97,6 @@ void _listFiles(String path) {
     );
   }
 
-  // Método para subir archivos
   Future<void> _selectFiles() async {
     try {
       final result = await FilePicker.platform.pickFiles(
@@ -120,13 +110,11 @@ void _listFiles(String path) {
           final selectedFile = File(file.path!);
 
           if (File(newFilePath).existsSync()) {
-            // Si el archivo ya existe, actualizar su fecha y hora
             await selectedFile.copy(newFilePath);
             setState(() {
               _fileRegistry[newFilePath] = DateTime.now();
             });
           } else {
-            // Si el archivo es nuevo, agregarlo al registro
             await selectedFile.copy(newFilePath);
             setState(() {
               _fileRegistry[newFilePath] = DateTime.now();
@@ -146,20 +134,21 @@ void _listFiles(String path) {
     }
   }
 
-  // Crear una nueva carpeta
   void _createFolder() {
     showDialog(
       context: context,
       builder: (context) {
         final TextEditingController folderNameController = TextEditingController();
-        return ContentDialog(
+        return AlertDialog(
           title: const Text('Crear Carpeta'),
-          content: TextBox(
+          content: TextField(
             controller: folderNameController,
-            placeholder: 'Nombre de la nueva carpeta',
+            decoration: const InputDecoration(
+              labelText: 'Nombre de la nueva carpeta',
+            ),
           ),
           actions: [
-            Button(
+            TextButton(
               child: const Text('Crear'),
               onPressed: () {
                 final folderName = folderNameController.text.trim();
@@ -177,7 +166,7 @@ void _listFiles(String path) {
                 Navigator.pop(context);
               },
             ),
-            Button(
+            TextButton(
               child: const Text('Cancelar'),
               onPressed: () => Navigator.pop(context),
             ),
@@ -187,10 +176,9 @@ void _listFiles(String path) {
     );
   }
 
-  // Mover archivos seleccionados
-  void _moveSelectedFiles() async {
+  Future<void> _moveSelectedFiles() async {
     try {
-      final result = await FilePicker.platform.getDirectoryPath(); // Seleccionar carpeta de destino
+      final result = await FilePicker.platform.getDirectoryPath();
       if (result != null) {
         for (var filePath in _selectedFiles) {
           final file = File(filePath);
@@ -198,38 +186,37 @@ void _listFiles(String path) {
           file.renameSync(newFilePath);
 
           setState(() {
-            _fileRegistry.remove(file.path); // Eliminar del registro el archivo antiguo
-            _fileRegistry[newFilePath] = DateTime.now(); // Registrar el archivo en su nueva ubicación
+            _fileRegistry.remove(file.path);
+            _fileRegistry[newFilePath] = DateTime.now();
           });
         }
 
-        _listFiles(_currentPath); // Actualizar lista de archivos
-        _saveRegistry(); // Guardar el registro actualizado
+        _listFiles(_currentPath);
+        _saveRegistry();
         _showMessage('Archivos movidos exitosamente.');
-        _selectedFiles.clear(); // Limpiar selección
+        _selectedFiles.clear();
       }
     } catch (e) {
       _showMessage('Error al mover archivos: $e');
     }
   }
-// Método para abrir un archivo
-Future<void> _openFile(FileSystemEntity file) async {
-  if (file is File) {
-    final Uri fileUri = Uri.file(file.path);
 
-    try {
-      if (await canLaunchUrl(fileUri)) {
-        await launchUrl(fileUri); // Abre el archivo con la aplicación predeterminada
-      } else {
-        _showMessage('No se pudo abrir el archivo: ${file.path}');
+  Future<void> _openFile(FileSystemEntity file) async {
+    if (file is File) {
+      final Uri fileUri = Uri.file(file.path);
+
+      try {
+        if (await canLaunchUrl(fileUri)) {
+          await launchUrl(fileUri);
+        } else {
+          _showMessage('No se pudo abrir el archivo: ${file.path}');
+        }
+      } catch (e) {
+        _showMessage('Error al abrir el archivo: $e');
       }
-    } catch (e) {
-      _showMessage('Error al abrir el archivo: $e');
     }
   }
-}
 
-  // Buscar archivos
   void _filterFiles(String query) {
     if (query.isEmpty) {
       setState(() {
@@ -245,206 +232,159 @@ Future<void> _openFile(FileSystemEntity file) async {
     }
   }
 
-// Método para confirmar y eliminar un archivo
-void _deleteFile(FileSystemEntity file) {
-  showDialog(
-    context: context,
-    builder: (context) {
-      return ContentDialog(
-        title: const Text('Eliminar Archivo'),
-        content: Text('¿Estás seguro de que deseas eliminar el archivo "${file.path.split(Platform.pathSeparator).last}"? Esta acción no se puede deshacer.'),
-        actions: [
-          Button(
-            child: const Text('Cancelar'),
-            onPressed: () {
-              Navigator.pop(context); // Cierra el cuadro de diálogo
-            },
-          ),
-          Button(
-            child: const Text('Eliminar'),
-            onPressed: () {
-              Navigator.pop(context); // Cierra el cuadro de diálogo
-              _performDeleteFile(file); // Llama al método que realiza la eliminación
-            },
-          ),
-        ],
-      );
-    },
-  );
-}
-
-// Método para realizar la eliminación del archivo
-void _performDeleteFile(FileSystemEntity file) {
-  try {
-    if (file.existsSync()) {
-      file.deleteSync();
-      setState(() {
-        _fileRegistry.remove(file.path); // Eliminar del registro
-        _listFiles(_currentPath); // Actualizar lista de archivos
-      });
-      _showMessage('Archivo eliminado exitosamente.');
-    }
-  } catch (e) {
-    _showMessage('Error al eliminar el archivo: $e');
+  void _deleteFile(FileSystemEntity file) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Eliminar Archivo'),
+          content: Text('¿Estás seguro de que deseas eliminar el archivo "${file.path.split(Platform.pathSeparator).last}"? Esta acción no se puede deshacer.'),
+          actions: [
+            TextButton(
+              child: const Text('Cancelar'),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            ),
+            TextButton(
+              child: const Text('Eliminar'),
+              onPressed: () {
+                Navigator.pop(context);
+                _performDeleteFile(file);
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
-}
 
+  void _performDeleteFile(FileSystemEntity file) {
+    try {
+      if (file.existsSync()) {
+        file.deleteSync();
+        setState(() {
+          _fileRegistry.remove(file.path);
+          _listFiles(_currentPath);
+        });
+        _showMessage('Archivo eliminado exitosamente.');
+      }
+    } catch (e) {
+      _showMessage('Error al eliminar el archivo: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return ScaffoldPage(
-      header: PageHeader(
-        title: Text("Explorador de Archivos - $_currentPath"),
-commandBar: Wrap(
-  spacing: 8.0, // Espaciado entre botones
-  runSpacing: 4.0, // Espaciado entre líneas de botones
-  children: [
-    if (_currentPath != Directory.current.path)
-      Button(
-        child: const Text("Atrás"),
-        onPressed: () {
-          final parentDir = Directory(_currentPath).parent.path;
-          _listFiles(parentDir);
-        },
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text(
+          'SERVIDOR B',
+          style: TextStyle(color: Colors.white),
+        ),
+        backgroundColor: const Color.fromARGB(255, 107, 135, 182),
       ),
-    Button(
-      child: const Text("Subir Archivos"),
-      onPressed: _selectFiles,
-    ),
-    Button(
-      child: const Text("Mover Archivos Seleccionados"),
-      onPressed: _selectedFiles.isNotEmpty ? _moveSelectedFiles : null,
-    ),
-    Button(
-      child: const Text("Crear Carpeta"),
-      onPressed: _createFolder,
-    ),
-  ],
-),
-
-      ),
-      content: Column(
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: TextBox(
+            child: TextField(
               controller: _searchController,
-              placeholder: "Buscar archivos...",
+              decoration: const InputDecoration(
+                labelText: 'Buscar archivos...',
+                border: OutlineInputBorder(),
+              ),
               onChanged: _filterFiles,
             ),
           ),
-Expanded(
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+            child: Wrap(
+              spacing: 8.0,
+              children: [
+                ElevatedButton(
+                  onPressed: () {
+                    final parentDir = Directory(_currentPath).parent.path;
+                    _listFiles(parentDir);
+                  },
+                  child: const Text('Atrás'),
+                ),
+                ElevatedButton(
+                  onPressed: _selectFiles,
+                  child: const Text('Subir Archivos'),
+                ),
+                ElevatedButton(
+                  onPressed: _selectedFiles.isNotEmpty ? _moveSelectedFiles : null,
+                  child: const Text('Mover Archivos seleccionados'),
+                ),
+                ElevatedButton(
+                  onPressed: _createFolder,
+                  child: const Text('Nueva Carpeta'),
+                ),
+              ],
+            ),
+          ),
+
+  Expanded(
   child: ListView.builder(
     itemCount: _filteredFiles.length,
     itemBuilder: (context, index) {
       final file = _filteredFiles[index];
       final fileName = file.path.split(Platform.pathSeparator).last;
-      final fileExtension = fileName.split('.').last.toLowerCase();
+
+      // Formatear fecha de última modificación
+      final lastModified = file.statSync().modified;
+      final lastModifiedFormatted = DateFormat('dd-MM-yyyy HH:mm').format(lastModified);
+
+      // Fecha de subida
       final uploadedAt = _fileRegistry[file.path] != null
           ? DateFormat('dd-MM-yyyy HH:mm').format(_fileRegistry[file.path]!)
           : 'No registrado';
 
-// Determinar color e ícono por tipo de archivo
-// Determinar color e ícono por tipo de archivo
-final Color fileColor = {
-  'docx': MaterialColors.Colors.blue,
-  'pdf': MaterialColors.Colors.red,
-  'xlsx': MaterialColors.Colors.green,
-  'txt': MaterialColors.Colors.grey,
-  'jpg': MaterialColors.Colors.orange,
-  'png': MaterialColors.Colors.purple,
-  'dwg': MaterialColors.Colors.cyan, // DWG de AutoCAD
-  'dxf': MaterialColors.Colors.teal,       // DXF de AutoCAD
-}[fileExtension] ?? MaterialColors.Colors.black;
-
-
-final IconData fileIcon = {
-  'docx': FluentIcons.page, // Icono genérico para Word
-  'pdf': FluentIcons.pdf,
-  'xlsx': FluentIcons.excel_document,
-  'txt': FluentIcons.text_document,
-  'jpg': FluentIcons.photo2,
-  'png': FluentIcons.photo2,
-  'dwg': FluentIcons.auto_racing, // DWG
-  'dxf': FluentIcons.settings, // Reemplazo para DXF
-}[fileExtension] ?? FluentIcons.page;
-      return Row(
-        children: [
-          Checkbox(
-            checked: _selectedFiles.contains(file.path),
-            onChanged: (isSelected) {
-              setState(() {
-                if (isSelected ?? false) {
-                  _selectedFiles.add(file.path);
-                } else {
-                  _selectedFiles.remove(file.path);
-                }
-              });
-            },
-          ),
-          Expanded(
-            child: HoverButton(
-              onPressed: () {
-                if (file is Directory) {
-                  _listFiles(file.path);
-                } else if (file is File) {
-                  _openFile(file);
-                }
-              },
-              builder: (context, states) => Container(
-                padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-                decoration: BoxDecoration(
-                  border: Border(
-                    bottom: BorderSide(
-                      color: MaterialColors.Colors.grey[200]!,
-                      width: 0.5,
-                    ),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      fileIcon,
-                      color: fileColor,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            fileName,
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: fileColor,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          Text(
-                            'Subido el: $uploadedAt',
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: MaterialColors.Colors.grey,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(FluentIcons.delete),
-                      onPressed: () => _deleteFile(file),
-                    ),
-                  ],
-                ),
-              ),
+      return ListTile(
+        leading: Checkbox(
+          value: _selectedFiles.contains(file.path),
+          onChanged: (isSelected) {
+            setState(() {
+              if (isSelected ?? false) {
+                _selectedFiles.add(file.path);
+              } else {
+                _selectedFiles.remove(file.path);
+              }
+            });
+          },
+        ),
+        title: Text(fileName),
+        subtitle: Row(
+          children: [
+            Text(
+              'Subido el: $uploadedAt',
+              style: const TextStyle(fontSize: 12),
             ),
-          ),
-        ],
+            const SizedBox(width: 16), // Espaciado horizontal
+            Text(
+              'Modificado el: $lastModifiedFormatted',
+              style: const TextStyle(fontSize: 12),
+            ),
+          ],
+        ),
+        trailing: IconButton(
+          icon: const Icon(Icons.delete),
+          onPressed: () => _deleteFile(file),
+        ),
+        onTap: () {
+          if (file is Directory) {
+            _listFiles(file.path);
+          } else if (file is File) {
+            _openFile(file);
+          }
+        },
       );
     },
   ),
 ),
+          
         ],
       ),
     );
@@ -452,8 +392,11 @@ final IconData fileIcon = {
 }
 
 void main() {
-  runApp(FluentApp(
+  runApp(MaterialApp(
     title: 'Explorador de Archivos',
+    theme: ThemeData(
+      scaffoldBackgroundColor: Colors.grey[200], // Color de fondo del scaffold
+    ),
     home: const FileExplorer(),
   ));
 }

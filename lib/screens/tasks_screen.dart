@@ -284,7 +284,7 @@ Widget build(BuildContext context) {
                   data: Theme.of(context).copyWith(
                     elevatedButtonTheme: ElevatedButtonThemeData(
                       style: ButtonStyle(
-                        backgroundColor: MaterialStateProperty.all(Colors.green), // Color de fondo personalizado
+                        backgroundColor: MaterialStateProperty.all(const Color.fromARGB(255, 76, 78, 175)), // Color de fondo personalizado
                         foregroundColor: MaterialStateProperty.all(Colors.white), // Color del texto
                         padding: MaterialStateProperty.all(
                           const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
