@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'dart:convert';
-import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -18,7 +18,7 @@ class _ProjectManagerState extends State<ProjectManager> {
   final TextEditingController _projectPathController = TextEditingController();
   final TextEditingController _searchController = TextEditingController();
   List<Map<String, String>> _filteredProjects = [];
-  
+
   String? _selectedProjectPath;
   List<FileSystemEntity> _files = [];
   bool _isLoading = false;
@@ -27,7 +27,7 @@ class _ProjectManagerState extends State<ProjectManager> {
   void initState() {
     super.initState();
     _loadProjects();
-    _filteredProjects= _projects;
+    _filteredProjects = _projects;
   }
 
   void _loadProjects() {
@@ -37,7 +37,7 @@ class _ProjectManagerState extends State<ProjectManager> {
       final List<dynamic> jsonProjects = jsonDecode(content);
       setState(() {
         _projects.addAll(jsonProjects.map((project) => Map<String, String>.from(project)));
-        _filteredProjects = List.from(_projects); // Actualizamos los proyectos filtrados
+        _filteredProjects = List.from(_projects);
       });
     }
   }
@@ -72,11 +72,11 @@ class _ProjectManagerState extends State<ProjectManager> {
   void _showMessage(String message) {
     showDialog(
       context: context,
-      builder: (context) => ContentDialog(
+      builder: (context) => AlertDialog(
         title: const Text('Mensaje'),
         content: Text(message),
         actions: [
-          Button(
+          TextButton(
             child: const Text('Aceptar'),
             onPressed: () => Navigator.pop(context),
           ),
@@ -126,241 +126,193 @@ class _ProjectManagerState extends State<ProjectManager> {
     });
   }
 
-  void _createFolder() {
-    showDialog(
-      context: context,
-      builder: (context) {
-        final TextEditingController folderNameController = TextEditingController();
-        return ContentDialog(
-          title: const Text('Crear Carpeta'),
-          content: TextBox(
-            controller: folderNameController,
-            placeholder: 'Nombre de la nueva carpeta',
-          ),
-          actions: [
-            Button(
-              child: const Text('Crear'),
-              onPressed: () {
-                final folderName = folderNameController.text.trim();
-                if (folderName.isNotEmpty) {
-                  final newFolderPath = '$_selectedProjectPath${Platform.pathSeparator}$folderName';
-                  Directory(newFolderPath).createSync();
-                  _listFiles(_selectedProjectPath!);
-                  _showMessage('Carpeta creada exitosamente.');
-                }
-                Navigator.pop(context);
-              },
-            ),
-            Button(
-              child: const Text('Cancelar'),
-              onPressed: () => Navigator.pop(context),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-
-@override
-Widget build(BuildContext context) {
-  return ScaffoldPage(
-    header: PageHeader(
-      title: const Text('Gestión de Proyectos'),
-    ),
-    content: Row(
-      children: [
-        // Panel de Proyectos con Buscador
-        Expanded(
-          flex: 1,
-          child: Column(
-            children: [
-              // Buscador
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: TextBox(
-                  controller: _searchController,
-                  placeholder: 'Buscar proyectos...',
-                  onChanged: (value) => _filterProjects(),
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Gestión de Proyectos', style: TextStyle(color: Colors.white)),
+        backgroundColor: const Color.fromARGB(255, 107, 135, 182),
+      ),
+      body: Row(
+        children: [
+          Expanded(
+            flex: 1,
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(6.0),
+                  child: TextField(
+                    controller: _searchController,
+                    decoration: const InputDecoration(
+                      labelText: 'Buscar proyectos...',
+                      border: OutlineInputBorder(),
+                    ),
+                    onChanged: (value) => _filterProjects(),
+                  ),
                 ),
-              ),
-              Button(
-                child: const Text('Agregar Proyecto'),
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (context) {
-                      return ContentDialog(
-                        title: const Text('Agregar Proyecto'),
-                        content: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            TextBox(
-                              controller: _projectNameController,
-                              placeholder: 'Nombre del proyecto',
-                            ),
-                            const SizedBox(height: 20),
-                            TextBox(
-                              controller: _projectPathController,
-                              placeholder: 'Ruta del proyecto',
-                              suffix: Button(
-                                child: const Text('Seleccionar'),
-                                onPressed: () async {
-                                  final result =
-                                      await FilePicker.platform.getDirectoryPath();
-                                  if (result != null) {
-                                    setState(() {
-                                      _projectPathController.text = result;
-                                    });
-                                  }
-                                },
+                ElevatedButton(
+                  style: ButtonStyle(
+                    backgroundColor: MaterialStateProperty.all(
+                        const Color.fromARGB(255, 76, 78, 175)),
+                    foregroundColor: MaterialStateProperty.all(Colors.white),
+                    padding: MaterialStateProperty.all(
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    ),
+                    textStyle: MaterialStateProperty.all(
+                      const TextStyle(fontSize: 16),
+                    ),
+                  ),
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (context) {
+                        return AlertDialog(
+                          title: const Text('Añadir Proyecto'),
+                          content: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              TextField(
+                                controller: _projectNameController,
+                                decoration: const InputDecoration(
+                                  labelText: 'Nombre del proyecto',
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                        actions: [
-                          Button(
-                            child: const Text('Cancelar'),
-                            onPressed: () {
-                              Navigator.pop(context);
-                              _projectNameController.clear();
-                              _projectPathController.clear();
-                            },
+                              const SizedBox(height: 20),
+                              TextField(
+                                controller: _projectPathController,
+                                decoration: InputDecoration(
+                                  labelText: 'Ruta del proyecto',
+                                  suffix: IconButton(
+                                    icon: const Icon(Icons.folder),
+                                    onPressed: () async {
+                                      final result =
+                                          await FilePicker.platform.getDirectoryPath();
+                                      if (result != null) {
+                                        setState(() {
+                                          _projectPathController.text = result;
+                                        });
+                                      }
+                                    },
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                          Button(
-                            child: const Text('Agregar'),
-                            onPressed: () {
-                              final name = _projectNameController.text.trim();
-                              final path = _projectPathController.text.trim();
-                              if (name.isNotEmpty && path.isNotEmpty) {
-                                _addProject(name, path);
+                          actions: [
+                            TextButton(
+                              child: const Text('Cancelar'),
+                              onPressed: () {
+                                Navigator.pop(context);
                                 _projectNameController.clear();
                                 _projectPathController.clear();
-                                Navigator.pop(context);
-                              } else {
-                                _showMessage('Por favor, complete ambos campos.');
-                              }
-                            },
-                          ),
-                        ],
-                      );
-                    },
-                  );
-                },
-              ),
-              Expanded(
-                child: ListView.builder(
-                  itemCount: _filteredProjects.length,
-                  itemBuilder: (context, index) {
-                    final project = _filteredProjects[index];
-                    return HoverButton(
-                      onPressed: () {
-                        _listFiles(project['path'] ?? '');
-                        setState(() {
-                          _selectedProjectPath = project['path'];
-                        });
-                      },
-                      builder: (context, states) => Container(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 10, horizontal: 16),
-                        decoration: BoxDecoration(
-                          color: states.isHovering ? Colors.grey[30] : null,
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(FluentIcons.folder_open),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Text(
-                                project['name'] ?? '',
-                                style: const TextStyle(fontSize: 16),
-                              ),
+                              },
                             ),
-                            IconButton(
-                              icon: const Icon(FluentIcons.delete),
-                              onPressed: () => _deleteProject(index),
+                            TextButton(
+                              child: const Text('Agregar'),
+                              onPressed: () {
+                                final name = _projectNameController.text.trim();
+                                final path = _projectPathController.text.trim();
+                                if (name.isNotEmpty && path.isNotEmpty) {
+                                  _addProject(name, path);
+                                  _projectNameController.clear();
+                                  _projectPathController.clear();
+                                  Navigator.pop(context);
+                                } else {
+                                  _showMessage('Por favor, complete ambos campos.');
+                                }
+                              },
                             ),
                           ],
-                        ),
-                      ),
+                        );
+                      },
                     );
                   },
+                  child: const Text('Añadir Proyecto'),
                 ),
-              ),
-            ],
-          ),
-        ),
-
-        // Panel de Archivos
-Expanded(
-  flex: 2,
-  child: _selectedProjectPath == null
-      ? const Center(child: Text('Seleccione un proyecto para ver los archivos'))
-      : Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Mostrar el nombre del proyecto seleccionado
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Text(
-                'Proyecto: ${_projects.firstWhere(
-                  (project) => project['path'] == _selectedProjectPath,
-                  orElse: () => {'name': 'Sin proyecto seleccionado'}
-                )['name']}',
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            // Listar archivos del proyecto seleccionado
-            Expanded(
-              child: ListView.builder(
-                itemCount: _files.length,
-                itemBuilder: (context, index) {
-                  final file = _files[index];
-                  return HoverButton(
-                    onPressed: () {
-                      if (file is File) {
-                        _openFile(file); // Asegúrate de que _openFile esté definido
-                      } else if (file is Directory) {
-                        _listFiles(file.path);
-                      }
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: _filteredProjects.length,
+                    itemBuilder: (context, index) {
+                      final project = _filteredProjects[index];
+                      return ListTile(
+                        title: Text(project['name'] ?? ''),
+                        onTap: () {
+                          _listFiles(project['path'] ?? '');
+                          setState(() {
+                            _selectedProjectPath = project['path'];
+                          });
+                        },
+                        trailing: IconButton(
+                          icon: const Icon(Icons.delete, color: Color.fromARGB(255, 255, 17, 0),),
+                          onPressed: () => _deleteProject(index),
+                        ),
+                      );
                     },
-                    builder: (context, states) => Container(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 10, horizontal: 16),
-                      decoration: BoxDecoration(
-                        border: Border(
-                          bottom: BorderSide(
-                            color: Colors.grey[200]!,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            flex: 2,
+            child: _selectedProjectPath == null
+                ? const Center(
+                    child: Text('Seleccione un proyecto para ver los archivos'),
+                  )
+                : Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Text(
+                          'Proyecto: ${_projects.firstWhere(
+                            (project) =>
+                                project['path'] == _selectedProjectPath,
+                            orElse: () => {'name': 'Sin proyecto seleccionado'},
+                          )['name']}',
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                        color: states.isHovering ? Colors.grey[30] : null,
                       ),
-                      child: Row(
-                        children: [
-                          Icon(file is Directory
-                              ? FluentIcons.folder_open
-                              : FluentIcons.page),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Text(file.path.split(Platform.pathSeparator).last),
-                          ),
-                        ],
+                      Expanded(
+                        child: ListView.builder(
+                          itemCount: _files.length,
+                          itemBuilder: (context, index) {
+                            final file = _files[index];
+                            return ListTile(
+                              leading: Icon(file is Directory
+                                  ? Icons.folder
+                                  : Icons.insert_drive_file),
+                              title: Text(file.path
+                                  .split(Platform.pathSeparator)
+                                  .last),
+                              onTap: () {
+                                if (file is File) {
+                                  _openFile(file);
+                                } else if (file is Directory) {
+                                  _listFiles(file.path);
+                                }
+                              },
+                            );
+                          },
+                        ),
                       ),
-                    ),
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-),
-
-      ],
-    ),
-  );
+                    ],
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
+void main() {
+  runApp(MaterialApp(
+    home: const ProjectManager(),
+    theme: ThemeData(
+      primarySwatch: Colors.blue,
+    ),
+  ));
 }
