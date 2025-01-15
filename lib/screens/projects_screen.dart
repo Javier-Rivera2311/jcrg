@@ -48,26 +48,31 @@ class _ProjectManagerState extends State<ProjectManager> {
     file.writeAsStringSync(content);
   }
 
-  void _listFiles(String path) {
+void _listFiles(String path) {
+  final directory = Directory(path);
+  try {
+    final files = directory.listSync();
     setState(() {
-      _isLoading = true;
-    });
+      _selectedProjectPath = path;
 
-    try {
-      final directory = Directory(path);
-      final files = directory.listSync();
-      setState(() {
-        _files = files;
-        _selectedProjectPath = path;
-      });
-    } catch (e) {
-      _showMessage('Error al cargar archivos: $e');
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
-    }
+      // Filtrar archivos y carpetas ocultos o específicos
+      _files = files.where((file) {
+        final fileName = file.path.split(Platform.pathSeparator).last;
+        // Excluir archivos o carpetas no deseados
+        if (fileName.startsWith(r'$') || 
+            fileName == 'System Volume Information' || 
+            fileName == '.BIN' || 
+            fileName == 'desktop.ini') {
+          return false;
+        }
+        return true;
+      }).toList();
+    });
+  } catch (e) {
+    _showMessage('Error al acceder al directorio: $e');
   }
+}
+
 
   void _showMessage(String message) {
     showDialog(
