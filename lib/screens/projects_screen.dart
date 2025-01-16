@@ -18,6 +18,9 @@ class _ProjectManagerState extends State<ProjectManager> {
   final TextEditingController _projectPathController = TextEditingController();
   final TextEditingController _searchController = TextEditingController();
   List<Map<String, String>> _filteredProjects = [];
+  String _currentPath = ''; // Ruta actual del directorio
+  final List<String> _selectedFiles = []; // Archivos seleccionados para mover
+
 
   String? _selectedProjectPath;
   List<FileSystemEntity> _files = [];
@@ -184,6 +187,65 @@ Future<void> _selectFiles() async {
     }
   } catch (e) {
     _showMessage('Error al seleccionar archivos: $e');
+  }
+}
+void _createFolder() {
+  showDialog(
+    context: context,
+    builder: (context) {
+      final TextEditingController folderNameController = TextEditingController();
+      return AlertDialog(
+        title: const Text('Crear Carpeta'),
+        content: TextField(
+          controller: folderNameController,
+          decoration: const InputDecoration(
+            labelText: 'Nombre de la nueva carpeta',
+          ),
+        ),
+        actions: [
+          TextButton(
+            child: const Text('Crear'),
+            onPressed: () {
+              final folderName = folderNameController.text.trim();
+              if (folderName.isNotEmpty) {
+                final newFolderPath = '$_currentPath${Platform.pathSeparator}$folderName';
+                final newFolder = Directory(newFolderPath);
+                if (!newFolder.existsSync()) {
+                  newFolder.createSync();
+                  _listFiles(_currentPath); // Actualizar lista de archivos
+                  _showMessage('Carpeta creada exitosamente.');
+                } else {
+                  _showMessage('La carpeta ya existe.');
+                }
+              }
+              Navigator.pop(context);
+            },
+          ),
+          TextButton(
+            child: const Text('Cancelar'),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ],
+      );
+    },
+  );
+}
+
+Future<void> _moveSelectedFiles() async {
+  try {
+    final result = await FilePicker.platform.getDirectoryPath();
+    if (result != null) {
+      for (var filePath in _selectedFiles) {
+        final file = File(filePath);
+        final newFilePath = '$result${Platform.pathSeparator}${file.path.split(Platform.pathSeparator).last}';
+        file.renameSync(newFilePath);
+      }
+      _listFiles(_currentPath); // Actualizar lista de archivos
+      _selectedFiles.clear(); // Limpiar la selección
+      _showMessage('Archivos movidos exitosamente.');
+    }
+  } catch (e) {
+    _showMessage('Error al mover archivos: $e');
   }
 }
 
@@ -408,7 +470,23 @@ Expanded(
                         : () => _selectFiles(),
                     child: const Text('Subir Archivos'),
                   ),
-                  
+                  ElevatedButton(
+  onPressed: () {
+    if (_selectedProjectPath != null) {
+      _createFolder();
+    } else {
+      _showMessage('Selecciona un proyecto primero.');
+    }
+  },
+  child: const Text('Crear Carpeta'),
+),
+ElevatedButton(
+  onPressed: _selectedFiles.isNotEmpty
+      ? _moveSelectedFiles
+      : null, // Deshabilitar si no hay archivos seleccionados
+  child: const Text('Mover Archivos'),
+),
+
               ],
             ),
           ),
