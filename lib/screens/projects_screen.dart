@@ -20,18 +20,68 @@ class _ProjectManagerState extends State<ProjectManager> {
   List<Map<String, String>> _filteredProjects = [];
   String _currentPath = ''; // Ruta actual del directorio
   final List<String> _selectedFiles = []; // Archivos seleccionados para mover
+  final Map<String, DateTime> _fileRegistry = {}; // Registro de archivos con fechas
+final String _registryPath = r'\\desktop-co5hnd9\SERVIDOR B\Informatica\flutter\tareas\registry.json';
+
+
+String _getUploadDate(FileSystemEntity file) {
+  if (_fileRegistry.containsKey(file.path)) {
+    final uploadDate = _fileRegistry[file.path];
+    return '${uploadDate!.day}-${uploadDate.month}-${uploadDate.year} ${uploadDate.hour}:${uploadDate.minute}';
+  }
+  return 'No registrado';
+}
+
+
+String _getModifiedDate(FileSystemEntity file) {
+  try {
+    final lastModified = file.statSync().modified;
+    return '${lastModified.day}-${lastModified.month}-${lastModified.year} ${lastModified.hour}:${lastModified.minute}';
+  } catch (e) {
+    return 'Desconocido';
+  }
+}
+
+
+void _loadRegistry() {
+  final registryFile = File(_registryPath);
+  if (registryFile.existsSync()) {
+    try {
+      final content = registryFile.readAsStringSync();
+      final Map<String, dynamic> jsonRegistry = jsonDecode(content);
+      setState(() {
+        jsonRegistry.forEach((key, value) {
+          _fileRegistry[key] = DateTime.parse(value);
+        });
+      });
+    } catch (e) {
+      _showMessage('Error al cargar el registro: $e');
+    }
+  }
+}
+void _saveRegistry() {
+  final registryFile = File(_registryPath);
+  try {
+    final jsonRegistry = _fileRegistry.map((key, value) => MapEntry(key, value.toIso8601String()));
+    registryFile.writeAsStringSync(jsonEncode(jsonRegistry));
+  } catch (e) {
+    _showMessage('Error al guardar el registro: $e');
+  }
+}
 
 
   String? _selectedProjectPath;
   List<FileSystemEntity> _files = [];
   bool _isLoading = false;
 
-  @override
-  void initState() {
-    super.initState();
-    _loadProjects();
-    _filteredProjects = _projects;
-  }
+@override
+void initState() {
+  super.initState();
+  _loadProjects();
+  _loadRegistry(); // Carga el registro al iniciar
+  _filteredProjects = _projects;
+}
+
 
   void _loadProjects() {
     final file = File(_projectsFile);
@@ -239,15 +289,71 @@ Future<void> _moveSelectedFiles() async {
         final file = File(filePath);
         final newFilePath = '$result${Platform.pathSeparator}${file.path.split(Platform.pathSeparator).last}';
         file.renameSync(newFilePath);
+
+        setState(() {
+          _fileRegistry.remove(file.path); // Elimina el registro antiguo
+          _fileRegistry[newFilePath] = DateTime.now(); // Registra la nueva ubicación con fecha actual
+        });
       }
-      _listFiles(_currentPath); // Actualizar lista de archivos
-      _selectedFiles.clear(); // Limpiar la selección
+
+      _listFiles(_currentPath); // Actualiza la lista de archivos
+      _saveRegistry(); // Guarda el registro actualizado
+      _selectedFiles.clear(); // Limpia la selección
       _showMessage('Archivos movidos exitosamente.');
     }
   } catch (e) {
     _showMessage('Error al mover archivos: $e');
   }
 }
+
+void _deleteFile(FileSystemEntity file) {
+  showDialog(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: const Text('Eliminar Archivo'),
+        content: Text(
+          '¿Estás seguro de que deseas eliminar el archivo "${file.path.split(Platform.pathSeparator).last}"? Esta acción no se puede deshacer.',
+        ),
+        actions: [
+          TextButton(
+            child: const Text('Cancelar'),
+            onPressed: () {
+              Navigator.pop(context);
+            },
+          ),
+          TextButton(
+            child: const Text('Eliminar'),
+            onPressed: () {
+              Navigator.pop(context);
+              _performDeleteFile(file);
+            },
+          ),
+        ],
+      );
+    },
+  );
+}
+
+void _performDeleteFile(FileSystemEntity file) {
+  try {
+    if (file.existsSync()) {
+      file.deleteSync(); // Elimina el archivo o carpeta
+      setState(() {
+        _files.remove(file); // Actualiza la lista de archivos
+        _selectedFiles.remove(file.path); // Elimina de la lista de seleccionados si es necesario
+        _fileRegistry.remove(file.path); // Elimina del registro
+      });
+      _saveRegistry(); // Guarda los cambios en el registro
+      _showMessage('Archivo eliminado exitosamente.');
+    } else {
+      _showMessage('El archivo no existe.');
+    }
+  } catch (e) {
+    _showMessage('Error al eliminar el archivo: $e');
+  }
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -407,6 +513,11 @@ TextField(
               ],
             ),
           ),
+              Container(
+      width: 1, // Grosor de la línea
+      color: Colors.grey[300], // Color de la línea
+      margin: const EdgeInsets.symmetric(vertical: 8), // Margen vertical
+    ),
 Expanded(
   flex: 2,
   child: _selectedProjectPath == null
@@ -432,64 +543,80 @@ Expanded(
                     ),
                   ),
                   const SizedBox(height: 10),
-                          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-            child: Wrap(
-              spacing: 8.0,
-              children: [
-                  ElevatedButton(
-                    style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all(
-                          const Color.fromARGB(255, 76, 78, 175)),
-                      foregroundColor:
-                          MaterialStateProperty.all(Colors.white),
-                      padding: MaterialStateProperty.all(
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      ),
-                      textStyle: MaterialStateProperty.all(
-                          const TextStyle(fontSize: 16)),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                    child: Wrap(
+                      spacing: 8.0,
+                      children: [
+                        ElevatedButton(
+                          style: ButtonStyle(
+                            backgroundColor: MaterialStateProperty.all(
+                                const Color.fromARGB(255, 76, 78, 175)),
+                            foregroundColor: MaterialStateProperty.all(Colors.white),
+                            padding: MaterialStateProperty.all(
+                              const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            ),
+                            textStyle: MaterialStateProperty.all(
+                              const TextStyle(fontSize: 16),
+                            ),
+                          ),
+                          onPressed: _goBack,
+                          child: const Text('Atrás'),
+                        ),
+                        ElevatedButton(
+                          style: ButtonStyle(
+                            backgroundColor: MaterialStateProperty.all(
+                                const Color.fromARGB(255, 76, 78, 175)),
+                            foregroundColor: MaterialStateProperty.all(Colors.white),
+                            padding: MaterialStateProperty.all(
+                              const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            ),
+                            textStyle: MaterialStateProperty.all(
+                              const TextStyle(fontSize: 16),
+                            ),
+                          ),
+                          onPressed: _selectedProjectPath == null
+                              ? null
+                              : () => _selectFiles(),
+                          child: const Text('Subir Archivos'),
+                        ),
+                        ElevatedButton(
+                          style: ButtonStyle(
+                            backgroundColor: MaterialStateProperty.all(
+                                const Color.fromARGB(255, 76, 78, 175)),
+                            foregroundColor: MaterialStateProperty.all(Colors.white),
+                            padding: MaterialStateProperty.all(
+                              const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            ),
+                            textStyle: MaterialStateProperty.all(
+                              const TextStyle(fontSize: 16),
+                            ),
+                          ),
+                          onPressed: _selectedProjectPath == null
+                              ? null
+                              : () => _createFolder(),
+                          child: const Text('Crear Carpeta'),
+                        ),
+                        ElevatedButton(
+                          style: ButtonStyle(
+                            backgroundColor: MaterialStateProperty.all(
+                                const Color.fromARGB(255, 76, 78, 175)),
+                            foregroundColor: MaterialStateProperty.all(Colors.white),
+                            padding: MaterialStateProperty.all(
+                              const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            ),
+                            textStyle: MaterialStateProperty.all(
+                              const TextStyle(fontSize: 16),
+                            ),
+                          ),
+                          onPressed: _selectedFiles.isNotEmpty
+                              ? () => _moveSelectedFiles()
+                              : null,
+                          child: const Text('Mover Archivos'),
+                        ),
+                      ],
                     ),
-                    onPressed: _goBack,
-                    child: const Text('Atrás'),
-                  
                   ),
-                    ElevatedButton(
-                    style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all(
-                          const Color.fromARGB(255, 76, 78, 175)),
-                      foregroundColor: MaterialStateProperty.all(Colors.white),
-                      padding: MaterialStateProperty.all(
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      ),
-                      textStyle: MaterialStateProperty.all(
-                        const TextStyle(fontSize: 16),
-                      ),
-                    ),
-                    onPressed: _selectedProjectPath == null
-                        ? null // Deshabilitar si no hay proyecto seleccionado
-                        : () => _selectFiles(),
-                    child: const Text('Subir Archivos'),
-                  ),
-                  ElevatedButton(
-  onPressed: () {
-    if (_selectedProjectPath != null) {
-      _createFolder();
-    } else {
-      _showMessage('Selecciona un proyecto primero.');
-    }
-  },
-  child: const Text('Crear Carpeta'),
-),
-ElevatedButton(
-  onPressed: _selectedFiles.isNotEmpty
-      ? _moveSelectedFiles
-      : null, // Deshabilitar si no hay archivos seleccionados
-  child: const Text('Mover Archivos'),
-),
-
-              ],
-            ),
-          ),
                 ],
               ),
             ),
@@ -498,20 +625,45 @@ ElevatedButton(
                 itemCount: _files.length,
                 itemBuilder: (context, index) {
                   final file = _files[index];
-                  return ListTile(
-                    leading: Icon(file is Directory
-                        ? Icons.folder
-                        : Icons.insert_drive_file),
-                    title: Text(file.path
-                        .split(Platform.pathSeparator)
-                        .last),
-                    onTap: () {
-                      if (file is File) {
-                        _openFile(file);
-                      } else if (file is Directory) {
-                        _listFiles(file.path);
-                      }
-                    },
+                  final fileName = file.path.split(Platform.pathSeparator).last;
+                  return Card(
+                    margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                    child: ListTile(
+                      leading: Checkbox(
+                        value: _selectedFiles.contains(file.path),
+                        onChanged: (value) {
+                          setState(() {
+                            if (value == true) {
+                              _selectedFiles.add(file.path);
+                            } else {
+                              _selectedFiles.remove(file.path);
+                            }
+                          });
+                        },
+                      ),
+                      title: Text(
+                        fileName,
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Subido el: ${_getUploadDate(file)}'),
+                          Text('Modificado el: ${_getModifiedDate(file)}'),
+                        ],
+                      ),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.delete, color: Colors.red),
+                        onPressed: () => _deleteFile(file),
+                      ),
+                      onTap: () {
+                        if (file is File) {
+                          _openFile(file);
+                        } else if (file is Directory) {
+                          _listFiles(file.path);
+                        }
+                      },
+                    ),
                   );
                 },
               ),
