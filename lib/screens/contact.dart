@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:jcrg/screens/theme_switcher.dart';
 
 void main() {
   runApp(ContactManagerApp());
@@ -102,6 +103,12 @@ class _ContactManagerScreenState extends State<ContactManagerScreen> {
       appBar: AppBar(
         title: const Text('Gestión de Contactos', style: TextStyle(color: Colors.white)),
         backgroundColor: const Color.fromARGB(255, 107, 135, 182),
+        leading: Center(
+        child: FlutterLogo(size:25),
+      ),
+      actions: [
+        ThemeSwitcher(),
+      ],
       ),
       body: Column(
         children: [

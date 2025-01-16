@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:jcrg/screens/theme_switcher.dart';
 
 void main() {
   runApp(TaskManagerApp());
@@ -219,6 +220,12 @@ Widget build(BuildContext context) {
     appBar: AppBar(
       title: const Text('Gestión de Tareas', style: TextStyle(color: Colors.white)),
       backgroundColor: const Color.fromARGB(255, 107, 135, 182),
+      leading: Center(
+        child: FlutterLogo(size:25),
+      ),
+      actions: [
+        ThemeSwitcher(),
+      ],
     ),
     body: Column(
       children: [

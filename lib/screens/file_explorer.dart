@@ -5,6 +5,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:jcrg/widgets/file_utils.dart';
+import 'package:jcrg/screens/theme_switcher.dart';
 
 class FileExplorer extends StatefulWidget {
   const FileExplorer({super.key});
@@ -285,6 +286,12 @@ void _listFiles(String path) {
           style: TextStyle(color: Colors.white),
         ),
         backgroundColor: const Color.fromARGB(255, 107, 135, 182),
+        leading: Center(
+        child: FlutterLogo(size:25),
+      ),
+      actions: [
+        ThemeSwitcher(),
+      ],
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

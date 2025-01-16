@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:jcrg/widgets/file_utils.dart';
+import 'package:jcrg/screens/theme_switcher.dart';
 
 class ProjectManager extends StatefulWidget {
   const ProjectManager({Key? key}) : super(key: key);
@@ -361,6 +362,12 @@ void _performDeleteFile(FileSystemEntity file) {
       appBar: AppBar(
         title: const Text('Gestión de Proyectos', style: TextStyle(color: Colors.white)),
         backgroundColor: const Color.fromARGB(255, 107, 135, 182),
+        leading: Center(
+        child: FlutterLogo(size:25),
+      ),
+      actions: [
+        ThemeSwitcher(),
+      ],
       ),
       body: Row(
         children: [

@@ -1,8 +1,6 @@
-
 import 'package:jcrg/screens/contact.dart';
 import 'package:jcrg/screens/file_explorer.dart';
 import 'package:jcrg/screens/tasks_screen.dart';
-//import 'package:jcrg/screens/segunda_screen.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:jcrg/screens/projects_screen.dart';
 
@@ -28,7 +26,8 @@ class _NavigationScreenState extends State<NavigationScreen> {
         header: Padding(
           padding: const EdgeInsets.only(left: 20),
           child: DefaultTextStyle(
-            style: FluentTheme.of(context).typography.title!,
+            style: FluentTheme.of(context).typography.title ??
+                const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             child: const Text('JCRG'),
           ),
         ),
@@ -42,7 +41,7 @@ class _NavigationScreenState extends State<NavigationScreen> {
           PaneItem(
             icon: const Icon(FluentIcons.task_list),
             title: const Text('Lista de tareas'),
-            body: TaskManagerApp (), // Contenido para la primera pantalla
+            body: TaskManagerApp(), // Contenido para la primera pantalla
           ),
           PaneItem(
             icon: const Icon(FluentIcons.cloud),
@@ -52,22 +51,22 @@ class _NavigationScreenState extends State<NavigationScreen> {
           PaneItem(
             icon: const Icon(FluentIcons.project_management),
             title: const Text('Gestión de Proyectos'),
-            body: const ProjectManager(), // Contenido para la segunda pantalla
+            body: const ProjectManager(), // Contenido para la tercera pantalla
           ),
           PaneItem(
             icon: const Icon(FluentIcons.contact_list),
             title: const Text('Contactos'),
-            body: ContactManagerApp(), // Contenido para la segunda pantalla
+            body: ContactManagerApp(), // Contenido para la cuarta pantalla
           ),
           PaneItem(
             icon: const Icon(FluentIcons.send_mirrored),
             title: const Text('Entregas'),
-            body: ContactManagerApp(), // Contenido para la segunda pantalla
+            body: ContactManagerApp(), // Contenido para la quinta pantalla
           ),
           PaneItem(
             icon: const Icon(FluentIcons.print),
             title: const Text('Impresiones'),
-            body: ContactManagerApp(), // Contenido para la segunda pantalla
+            body: ContactManagerApp(), // Contenido para la sexta pantalla
           ),
         ],
       ),
