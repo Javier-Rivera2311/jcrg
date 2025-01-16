@@ -56,17 +56,17 @@ class _NavigationScreenState extends State<NavigationScreen> {
           PaneItem(
             icon: const Icon(FluentIcons.contact_list),
             title: const Text('Contactos'),
-            body: ContactManagerApp(), // Contenido para la cuarta pantalla
+            body: ContactManagerScreen(), // Contenido para la cuarta pantalla
           ),
           PaneItem(
             icon: const Icon(FluentIcons.send_mirrored),
             title: const Text('Entregas'),
-            body: ContactManagerApp(), // Contenido para la quinta pantalla
+            body: ContactManagerScreen(), // Contenido para la quinta pantalla
           ),
           PaneItem(
             icon: const Icon(FluentIcons.print),
             title: const Text('Impresiones'),
-            body: ContactManagerApp(), // Contenido para la sexta pantalla
+            body: ContactManagerScreen(), // Contenido para la sexta pantalla
           ),
         ],
       ),

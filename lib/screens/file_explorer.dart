@@ -409,9 +409,6 @@ Expanded(
 void main() {
   runApp(MaterialApp(
     title: 'Explorador de Archivos',
-    theme: ThemeData(
-      scaffoldBackgroundColor: Colors.grey[200], // Color de fondo del scaffold
-    ),
     home: const FileExplorer(),
   ));
 }
