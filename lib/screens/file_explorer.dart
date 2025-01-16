@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
+import 'package:jcrg/widgets/file_utils.dart';
 
 class FileExplorer extends StatefulWidget {
   const FileExplorer({super.key});
@@ -342,17 +343,26 @@ Expanded(
       return Column(
         children: [
           ListTile(
-            leading: Checkbox(
-              value: _selectedFiles.contains(file.path),
-              onChanged: (isSelected) {
-                setState(() {
-                  if (isSelected ?? false) {
-                    _selectedFiles.add(file.path);
-                  } else {
-                    _selectedFiles.remove(file.path);
-                  }
-                });
-              },
+            leading: Row(
+              mainAxisSize: MainAxisSize.min, // Asegura que solo ocupe el espacio necesario
+              children: [
+                Icon(
+                  getFileIcon(file), // Función importada para obtener el ícono
+                  color: getFileColor(file), // Función importada para obtener el color
+                ),
+                Checkbox(
+                  value: _selectedFiles.contains(file.path),
+                  onChanged: (isSelected) {
+                    setState(() {
+                      if (isSelected ?? false) {
+                        _selectedFiles.add(file.path);
+                      } else {
+                        _selectedFiles.remove(file.path);
+                      }
+                    });
+                  },
+                ),
+              ],
             ),
             title: Text(fileName),
             subtitle: Row(
@@ -380,6 +390,7 @@ Expanded(
     },
   ),
 ),
+
 
           
         ],

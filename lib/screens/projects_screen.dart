@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:jcrg/widgets/file_utils.dart';
 
 class ProjectManager extends StatefulWidget {
   const ProjectManager({Key? key}) : super(key: key);
@@ -17,30 +18,31 @@ class _ProjectManagerState extends State<ProjectManager> {
   final TextEditingController _projectNameController = TextEditingController();
   final TextEditingController _projectPathController = TextEditingController();
   final TextEditingController _searchController = TextEditingController();
-  List<Map<String, String>> _filteredProjects = [];
-  String _currentPath = ''; // Ruta actual del directorio
   final List<String> _selectedFiles = []; // Archivos seleccionados para mover
   final Map<String, DateTime> _fileRegistry = {}; // Registro de archivos con fechas
-final String _registryPath = r'\\desktop-co5hnd9\SERVIDOR B\Informatica\flutter\tareas\registry.json';
+  final String _registryPath = r'\\desktop-co5hnd9\SERVIDOR B\Informatica\flutter\tareas\registry.json';
+  
+  List<Map<String, String>> _filteredProjects = [];
+  
+  final String _currentPath = ''; // Ruta actual del directorio
 
-
-String _getUploadDate(FileSystemEntity file) {
-  if (_fileRegistry.containsKey(file.path)) {
-    final uploadDate = _fileRegistry[file.path];
-    return '${uploadDate!.day}-${uploadDate.month}-${uploadDate.year} ${uploadDate.hour}:${uploadDate.minute}';
+  String _getUploadDate(FileSystemEntity file) {
+    if (_fileRegistry.containsKey(file.path)) {
+      final uploadDate = _fileRegistry[file.path];
+      return '${uploadDate!.day}-${uploadDate.month}-${uploadDate.year} ${uploadDate.hour}:${uploadDate.minute}';
+    }
+    return 'No registrado';
   }
-  return 'No registrado';
-}
 
 
-String _getModifiedDate(FileSystemEntity file) {
-  try {
-    final lastModified = file.statSync().modified;
-    return '${lastModified.day}-${lastModified.month}-${lastModified.year} ${lastModified.hour}:${lastModified.minute}';
-  } catch (e) {
-    return 'Desconocido';
+  String _getModifiedDate(FileSystemEntity file) {
+    try {
+      final lastModified = file.statSync().modified;
+      return '${lastModified.day}-${lastModified.month}-${lastModified.year} ${lastModified.hour}:${lastModified.minute}';
+    } catch (e) {
+      return 'Desconocido';
+    }
   }
-}
 
 
 void _loadRegistry() {
@@ -69,10 +71,8 @@ void _saveRegistry() {
   }
 }
 
-
   String? _selectedProjectPath;
   List<FileSystemEntity> _files = [];
-  bool _isLoading = false;
 
 @override
 void initState() {
@@ -620,54 +620,65 @@ Expanded(
                 ],
               ),
             ),
-            Expanded(
-              child: ListView.builder(
-                itemCount: _files.length,
-                itemBuilder: (context, index) {
-                  final file = _files[index];
-                  final fileName = file.path.split(Platform.pathSeparator).last;
-                  return Card(
-                    margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-                    child: ListTile(
-                      leading: Checkbox(
-                        value: _selectedFiles.contains(file.path),
-                        onChanged: (value) {
-                          setState(() {
-                            if (value == true) {
-                              _selectedFiles.add(file.path);
-                            } else {
-                              _selectedFiles.remove(file.path);
-                            }
-                          });
-                        },
-                      ),
-                      title: Text(
-                        fileName,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Subido el: ${_getUploadDate(file)}'),
-                          Text('Modificado el: ${_getModifiedDate(file)}'),
-                        ],
-                      ),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.delete, color: Colors.red),
-                        onPressed: () => _deleteFile(file),
-                      ),
-                      onTap: () {
-                        if (file is File) {
-                          _openFile(file);
-                        } else if (file is Directory) {
-                          _listFiles(file.path);
-                        }
-                      },
-                    ),
-                  );
+Expanded(
+  child: ListView.builder(
+    itemCount: _files.length,
+    itemBuilder: (context, index) {
+      final file = _files[index];
+      final fileName = file.path.split(Platform.pathSeparator).last;
+      return Card(
+        margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+        child: ListTile(
+          leading: Row(
+            mainAxisSize: MainAxisSize.min, // Para que la fila ocupe solo el espacio necesario
+            children: [
+              Icon(
+                getFileIcon(file), // Función para obtener el ícono del archivo
+                color: getFileColor(file), // Función para obtener el color del ícono
+              ),
+              Checkbox(
+                value: _selectedFiles.contains(file.path), // Estado del checkbox
+                onChanged: (value) {
+                  setState(() {
+                    if (value == true) {
+                      _selectedFiles.add(file.path); // Agregar archivo a la lista seleccionada
+                    } else {
+                      _selectedFiles.remove(file.path); // Remover archivo de la lista seleccionada
+                    }
+                  });
                 },
               ),
-            ),
+            ],
+          ),
+          title: Text(
+            fileName,
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+          subtitle: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Subido el: ${_getUploadDate(file)}'),
+              Text('Modificado el: ${_getModifiedDate(file)}'),
+            ],
+          ),
+          trailing: IconButton(
+            icon: const Icon(Icons.delete, color: Colors.red),
+            onPressed: () => _deleteFile(file),
+          ),
+          onTap: () {
+            if (file is File) {
+              _openFile(file);
+            } else if (file is Directory) {
+              _listFiles(file.path);
+            }
+          },
+        ),
+      );
+    },
+  ),
+),
+
+
           ],
         ),
 ),

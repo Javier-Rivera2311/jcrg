@@ -59,6 +59,16 @@ class _NavigationScreenState extends State<NavigationScreen> {
             title: const Text('Contactos'),
             body: ContactManagerApp(), // Contenido para la segunda pantalla
           ),
+          PaneItem(
+            icon: const Icon(FluentIcons.send_mirrored),
+            title: const Text('Entregas'),
+            body: ContactManagerApp(), // Contenido para la segunda pantalla
+          ),
+          PaneItem(
+            icon: const Icon(FluentIcons.print),
+            title: const Text('Impresiones'),
+            body: ContactManagerApp(), // Contenido para la segunda pantalla
+          ),
         ],
       ),
     );
