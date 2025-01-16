@@ -62,7 +62,8 @@ void _listFiles(String path) {
         // Excluir archivos o carpetas no deseados
         if (fileName.startsWith(r'$') || 
             fileName == 'System Volume Information' || 
-            fileName == ".BIN"  || fileName =="desktop.ini" )
+            fileName == ".BIN"  || 
+            fileName =="desktop.ini" )
             {
           return false;
         }

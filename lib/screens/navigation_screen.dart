@@ -51,7 +51,7 @@ class _NavigationScreenState extends State<NavigationScreen> {
           ),
           PaneItem(
             icon: const Icon(FluentIcons.project_management),
-            title: const Text('Proyectos'),
+            title: const Text('Gestión de Proyectos'),
             body: const ProjectManager(), // Contenido para la segunda pantalla
           ),
           PaneItem(

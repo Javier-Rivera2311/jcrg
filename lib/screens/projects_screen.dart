@@ -153,6 +153,39 @@ void _goBack() {
           .toList();
     });
   }
+Future<void> _selectFiles() async {
+  try {
+    final result = await FilePicker.platform.pickFiles(
+      allowMultiple: true, // Permitir selección múltiple
+      type: FileType.any,  // Permitir cualquier tipo de archivo
+    );
+
+    if (result != null && result.files.isNotEmpty) {
+      for (var file in result.files) {
+        final newFilePath = '$_selectedProjectPath${Platform.pathSeparator}${file.name}';
+        final selectedFile = File(file.path!);
+
+        if (File(newFilePath).existsSync()) {
+          await selectedFile.copy(newFilePath);
+          setState(() {
+            _files.add(File(newFilePath)); // Agregar a la lista de archivos
+          });
+        } else {
+          await selectedFile.copy(newFilePath);
+          setState(() {
+            _files.add(File(newFilePath)); // Agregar a la lista de archivos
+          });
+        }
+      }
+
+      _showMessage('Archivos subidos exitosamente.');
+    } else {
+      _showMessage('No se seleccionaron archivos.');
+    }
+  } catch (e) {
+    _showMessage('Error al seleccionar archivos: $e');
+  }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -337,6 +370,11 @@ Expanded(
                     ),
                   ),
                   const SizedBox(height: 10),
+                          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+            child: Wrap(
+              spacing: 8.0,
+              children: [
                   ElevatedButton(
                     style: ButtonStyle(
                       backgroundColor: MaterialStateProperty.all(
@@ -351,7 +389,29 @@ Expanded(
                     ),
                     onPressed: _goBack,
                     child: const Text('Atrás'),
+                  
                   ),
+                    ElevatedButton(
+                    style: ButtonStyle(
+                      backgroundColor: MaterialStateProperty.all(
+                          const Color.fromARGB(255, 76, 78, 175)),
+                      foregroundColor: MaterialStateProperty.all(Colors.white),
+                      padding: MaterialStateProperty.all(
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      ),
+                      textStyle: MaterialStateProperty.all(
+                        const TextStyle(fontSize: 16),
+                      ),
+                    ),
+                    onPressed: _selectedProjectPath == null
+                        ? null // Deshabilitar si no hay proyecto seleccionado
+                        : () => _selectFiles(),
+                    child: const Text('Subir Archivos'),
+                  ),
+                  
+              ],
+            ),
+          ),
                 ],
               ),
             ),
