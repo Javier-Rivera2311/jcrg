@@ -1,48 +1,33 @@
 import 'package:flutter/material.dart';
-import 'package:jcrg/screens/theme_switcher.dart';
+import 'package:flutter_calendar_carousel/flutter_calendar_carousel.dart';
+import 'package:flutter_calendar_carousel/classes/event.dart';
 
-class CalendarScreen extends StatefulWidget {
-  const CalendarScreen({super.key});
-
-  @override
-  CalendarScreenState createState() => CalendarScreenState();
-}
-
-class CalendarScreenState extends State<CalendarScreen> {
+class CalendarScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    EventList<Event> markedDates = EventList<Event>(
+      events: {
+        DateTime(2025, 1, 17): [Event(date: DateTime(2025, 1, 17), title: "Evento 1")],
+      },
+    );
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Calendario',
-          style: TextStyle(color: Colors.white),
-        ),
-        backgroundColor: const Color.fromARGB(255, 107, 135, 182),
-        leading: Center(
-        child: FlutterLogo(size:25)),
-        actions: [
-          ThemeSwitcher(), // Botón para cambiar el tema
-        ],
+        title: const Text('Calendario'),
+        backgroundColor: Colors.blue,
       ),
-      // Fondo dinámico según el tema
-      body: Container(
-        color: Theme.of(context).scaffoldBackgroundColor,
-        child: const Center(
-          child: Text('Aquí va el contenido'),
-        ),
+      body: CalendarCarousel<Event>(
+        onDayPressed: (date, events) {
+          for (var event in events) {
+            print(event.title);
+          }
+        },
+        markedDatesMap: markedDates,
+        markedDateShowIcon: true,
+        markedDateIconBuilder: (event) {
+          return const Icon(Icons.circle, color: Colors.red, size: 10);
+        },
       ),
     );
   }
-}
-
-void main() {
-  runApp(
-    MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData.light(),
-      darkTheme: ThemeData.dark(),
-      themeMode: ThemeMode.system, // Se puede cambiar según el ThemeSwitcher
-      home: const CalendarScreen(),
-    ),
-  );
 }
