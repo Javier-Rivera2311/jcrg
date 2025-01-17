@@ -3,29 +3,45 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:jcrg/screens/theme_switcher.dart';
+import 'package:provider/provider.dart';
+import 'package:jcrg/widgets/theme_manager.dart';
+final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier(ThemeMode.system);
+
 
 void main() {
-  runApp(TaskManagerApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => ThemeNotifier(), // Usamos Provider para manejar el tema
+      child: TaskManagerApp(),
+    ),
+  );
 }
 
 class TaskManagerApp extends StatelessWidget {
-  
   @override
   Widget build(BuildContext context) {
+    // Recuperamos el ThemeNotifier desde el Provider
+    final themeNotifier = Provider.of<ThemeNotifier>(context);
+
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: TaskManagerScreen(),
-      theme: ThemeData(
-        scaffoldBackgroundColor: Colors.grey[200],
-      ),
+      theme: ThemeData.light(),
+      darkTheme: ThemeData.dark(),
+      themeMode: themeNotifier.themeMode, // Usamos el ThemeNotifier para manejar el tema
+      home: const TaskManagerScreen(), // Pantalla principal
     );
   }
 }
 
+
+
 class TaskManagerScreen extends StatefulWidget {
+  const TaskManagerScreen({Key? key}) : super(key: key);
+
   @override
   _TaskManagerScreenState createState() => _TaskManagerScreenState();
 }
+
 
 class _TaskManagerScreenState extends State<TaskManagerScreen> {
   final String filePath = r'\\desktop-co5hnd9\SERVIDOR B\Informatica\flutter\tareas\tasks.json';
@@ -176,7 +192,7 @@ void _editTask(int priorityIndex, int taskIndex) {
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: const Color.fromARGB(255, 255, 255, 255),
                   border: Border.all(color: Colors.grey[400]!),
                   borderRadius: BorderRadius.circular(5),
                 ),
@@ -227,96 +243,87 @@ Widget build(BuildContext context) {
         ThemeSwitcher(),
       ],
     ),
-    body: Column(
-      children: [
-        // Formulario para añadir tareas
-        Padding(
-          padding: const EdgeInsets.all(8),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              DropdownButton<String>(
-                value: _selectedPriority,
-                onChanged: (value) {
-                  setState(() {
-                    _selectedPriority = value!;
-                  });
-                },
-                items: priorities.map<DropdownMenuItem<String>>((priority) {
-                  return DropdownMenuItem(
-                    value: priority['title'],
-                    child: Text(priority['title']),
-                  );
-                }).toList(),
+    
+body: Stack(
+  children: [
+    // Fondo de color basado en el tema
+    Container(
+      color: Theme.of(context).scaffoldBackgroundColor,
+    ),
+    // Contenido principal
+    SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Formulario para añadir tareas
+            DropdownButton<String>(
+              value: _selectedPriority,
+              onChanged: (value) {
+                setState(() {
+                  _selectedPriority = value!;
+                });
+              },
+              items: priorities.map<DropdownMenuItem<String>>((priority) {
+                return DropdownMenuItem(
+                  value: priority['title'],
+                  child: Text(priority['title']),
+                );
+              }).toList(),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _taskController,
+              decoration: InputDecoration(
+                labelText: 'Título de la tarea',
+                border: const OutlineInputBorder(),
+                labelStyle: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
               ),
-              TextField(
-                controller: _taskController,
-                decoration: const InputDecoration(
-                  labelText: 'Título de la tarea',
-                  border: OutlineInputBorder(),
-                ),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _assigneeController,
+              decoration: InputDecoration(
+                labelText: 'Encargado',
+                border: const OutlineInputBorder(),
+                labelStyle: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
               ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: _assigneeController,
-                decoration: const InputDecoration(
-                  labelText: 'Encargado',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 8),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Text(
-                    'Fecha límite: ${_formatDate(_selectedDate)}', // Usar _formatDate aquí
-                    style: const TextStyle(fontSize: 16),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Text(
+                  'Fecha límite: ${_formatDate(_selectedDate)}',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Theme.of(context).textTheme.bodyLarge?.color,
                   ),
-                  const SizedBox(width: 8),
-                  IconButton(
-                    icon: const Icon(Icons.calendar_today),
-                    onPressed: () {
-                      _pickDate(context, (pickedDate) {
-                        setState(() {
-                          _selectedDate = pickedDate;
-                        });
+                ),
+                const SizedBox(width: 8),
+                IconButton(
+                  icon: const Icon(Icons.calendar_today),
+                  onPressed: () {
+                    _pickDate(context, (pickedDate) {
+                      setState(() {
+                        _selectedDate = pickedDate;
                       });
-                    },
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Center(
-                child: Theme(
-                  data: Theme.of(context).copyWith(
-                    elevatedButtonTheme: ElevatedButtonThemeData(
-                      style: ButtonStyle(
-                        backgroundColor: MaterialStateProperty.all(const Color.fromARGB(255, 76, 78, 175)), // Color de fondo personalizado
-                        foregroundColor: MaterialStateProperty.all(Colors.white), // Color del texto
-                        padding: MaterialStateProperty.all(
-                          const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                        ),
-                        textStyle: MaterialStateProperty.all(
-                          const TextStyle(fontSize: 16),
-                        ),
-                      ),
-                    ),
-                  ),
-                  child: ElevatedButton(
-                    onPressed: _addTask,
-                    child: const Text('Añadir Tarea'),
-                  ),
+                    });
+                  },
                 ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Center(
+              child: ElevatedButton(
+                onPressed: _addTask,
+                child: const Text('Añadir Tarea'),
               ),
-            ],
-          ),
-        ),
-        // Lista de tareas agrupadas por prioridades
-        Expanded(
-          child: ListView.builder(
-            itemCount: priorities.length,
-            itemBuilder: (context, priorityIndex) {
-              final priority = priorities[priorityIndex];
+            ),
+            const SizedBox(height: 16),
+            // Lista de tareas agrupadas por prioridades
+            ...priorities.map((priority) {
               return Card(
                 margin: const EdgeInsets.all(8),
                 shape: RoundedRectangleBorder(
@@ -353,8 +360,10 @@ Widget build(BuildContext context) {
                                         Text('Encargado: ${task['assignee']}'),
                                         const SizedBox(width: 10),
                                         Text(
-                                          'Fecha límite: ${_formatDate(dueDate)}', // Usar _formatDate aquí
-                                          style: const TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
+                                          'Fecha límite: ${_formatDate(dueDate)}',
+                                          style: TextStyle(
+                                            color: Theme.of(context).textTheme.bodyLarge?.color,
+                                          ),
                                         ),
                                       ],
                                     ),
@@ -384,28 +393,36 @@ Widget build(BuildContext context) {
                                   const SizedBox(width: 10),
                                   IconButton(
                                     icon: const Icon(Icons.edit, color: Colors.blue),
-                                    onPressed: () => _editTask(priorityIndex, taskIndex),
+                                    onPressed: () => _editTask(
+                                      priorities.indexOf(priority),
+                                      taskIndex,
+                                    ),
                                   ),
                                   IconButton(
                                     icon: const Icon(Icons.delete, color: Colors.red),
-                                    onPressed: () => _deleteTask(priorityIndex, taskIndex),
+                                    onPressed: () => _deleteTask(
+                                      priorities.indexOf(priority),
+                                      taskIndex,
+                                    ),
                                   ),
                                 ],
                               ),
                             ],
                           ),
                         ),
-                        const Divider(thickness: 1, height: 1, color: Colors.grey), // Línea horizontal
+                        const Divider(thickness: 1, height: 1, color: Colors.grey),
                       ],
                     );
                   }).toList(),
                 ),
               );
-            },
-          ),
+            }).toList(),
+          ],
         ),
-      ],
+      ),
     ),
+  ],
+),
   );
 }
 }
