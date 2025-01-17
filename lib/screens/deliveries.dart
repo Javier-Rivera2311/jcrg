@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:jcrg/screens/theme_switcher.dart';
 
-class ContactManagerScreen extends StatefulWidget {
-  const ContactManagerScreen({super.key});
+class DeliveriesScreen extends StatefulWidget {
+  const DeliveriesScreen({super.key});
 
   @override
-  _ContactManagerScreenState createState() => _ContactManagerScreenState();
+  DeliveriesScreenState createState() => DeliveriesScreenState();
 }
 
-class _ContactManagerScreenState extends State<ContactManagerScreen> {
+class DeliveriesScreenState extends State<DeliveriesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Gestión de Contactos',
+          'Gestión de Entregas',
           style: TextStyle(color: Colors.white),
         ),
         backgroundColor: const Color.fromARGB(255, 107, 135, 182),
@@ -42,7 +42,7 @@ void main() {
       theme: ThemeData.light(),
       darkTheme: ThemeData.dark(),
       themeMode: ThemeMode.system, // Se puede cambiar según el ThemeSwitcher
-      home: const ContactManagerScreen(),
+      home: const DeliveriesScreen(),
     ),
   );
 }
