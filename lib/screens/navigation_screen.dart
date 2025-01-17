@@ -5,6 +5,9 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:jcrg/screens/projects_screen.dart';
 import 'package:jcrg/screens/deliveries.dart';
 import 'package:jcrg/screens/impressions.dart';
+import 'package:jcrg/screens/calendar.dart';
+
+
 class NavigationScreen extends StatefulWidget {
   const NavigationScreen({super.key});
 
@@ -60,9 +63,14 @@ class _NavigationScreenState extends State<NavigationScreen> {
             body: ContactManagerScreen(), // Contenido para la cuarta pantalla
           ),
           PaneItem(
+            icon: const Icon(FluentIcons.calendar_reply),
+            title: const Text('Calendario'),
+            body: CalendarScreen(), // Contenido para la quinta pantalla
+          ),
+          PaneItem(
             icon: const Icon(FluentIcons.send_mirrored),
             title: const Text('Entregas'),
-            body: DeliveriesScreen(), // Contenido para la quinta pantalla
+            body: DeliveriesScreen(), // Contenido para la sexta pantalla
           ),
           PaneItem(
             icon: const Icon(FluentIcons.print),
