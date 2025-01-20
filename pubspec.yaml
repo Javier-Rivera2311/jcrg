@@ -20,7 +20,8 @@ dependencies:
   provider: ^6.0.5
   flutter_calendar_carousel: ^2.0.1
   syncfusion_flutter_calendar: ^28.1.39
-
+  flutter_local_notifications: ^18.0.1
+  
 dev_dependencies:
   flutter_test:
     sdk: flutter

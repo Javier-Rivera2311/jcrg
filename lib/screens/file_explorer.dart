@@ -322,18 +322,55 @@ void _listFiles(String path) {
                     final parentDir = Directory(_currentPath).parent.path;
                     _listFiles(parentDir);
                   },
+                    style: ButtonStyle(
+                    backgroundColor: MaterialStateProperty.all(const Color.fromARGB(255, 76, 78, 175)), // Cambia el color de fondo
+                    foregroundColor: MaterialStateProperty.all(Colors.white), // Cambia el color del texto
+                    padding: MaterialStateProperty.all(
+                          const EdgeInsets.symmetric(horizontal: 16, vertical: 12), // Ajusta el tamaño del botón
+                          ),
+                  ),
                   child: const Text('Atrás'),
                 ),
                 ElevatedButton(
                   onPressed: _selectFiles,
+                    style: ButtonStyle(
+                    backgroundColor: MaterialStateProperty.all(const Color.fromARGB(255, 76, 78, 175)), // Cambia el color de fondo
+                    foregroundColor: MaterialStateProperty.all(Colors.white), // Cambia el color del texto
+                    padding: MaterialStateProperty.all(
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12), // Ajusta el tamaño del botón
+                    ),
+            ),
                   child: const Text('Subir Archivos'),
                 ),
-                ElevatedButton(
-                  onPressed: _selectedFiles.isNotEmpty ? _moveSelectedFiles : null,
-                  child: const Text('Mover Archivos seleccionados'),
-                ),
+ElevatedButton(
+  // Habilitar o deshabilitar según los archivos seleccionados
+  onPressed: _selectedFiles.isNotEmpty ? _moveSelectedFiles : null,
+  style: ButtonStyle(
+    // Estilo condicional: deshabilitado si no hay archivos seleccionados
+    backgroundColor: MaterialStateProperty.all(
+      _selectedFiles.isNotEmpty
+          ? const Color.fromARGB(255, 76, 78, 175) // Color activo
+          : Colors.grey, // Color deshabilitado
+    ),
+    foregroundColor: MaterialStateProperty.all(
+      _selectedFiles.isNotEmpty ? Colors.white : Colors.black38, // Ajusta el color del texto
+    ),
+    padding: MaterialStateProperty.all(
+      const EdgeInsets.symmetric(horizontal: 16, vertical: 12), // Ajusta el tamaño del botón
+    ),
+  ),
+  child: const Text('Mover Archivos seleccionados'),
+),
+
                 ElevatedButton(
                   onPressed: _createFolder,
+                    style: ButtonStyle(
+                    backgroundColor: MaterialStateProperty.all(const Color.fromARGB(255, 76, 78, 175)), // Cambia el color de fondo
+                    foregroundColor: MaterialStateProperty.all(Colors.white), // Cambia el color del texto
+                    padding: MaterialStateProperty.all(
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12), // Ajusta el tamaño del botón
+                  ),
+          ),
                   child: const Text('Nueva Carpeta'),
                 ),
               ],

@@ -347,9 +347,17 @@ body: Stack(
             const SizedBox(height: 16),
             Center(
               child: ElevatedButton(
-                onPressed: _addTask,
-                child: const Text('Añadir Tarea'),
-              ),
+  onPressed: _addTask,
+  style: ButtonStyle(
+    backgroundColor: MaterialStateProperty.all(const Color.fromARGB(255, 76, 78, 175)), // Cambia el color de fondo
+    foregroundColor: MaterialStateProperty.all(Colors.white), // Cambia el color del texto
+            padding: MaterialStateProperty.all(
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 12), // Ajusta el tamaño del botón
+          ),
+  ),
+  child: const Text('Añadir Tarea'),
+),
+
             ),
             const SizedBox(height: 16),
             // Lista de tareas agrupadas por prioridades
