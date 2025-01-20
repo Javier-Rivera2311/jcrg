@@ -5,6 +5,9 @@ import 'package:intl/intl.dart';
 import 'package:jcrg/screens/theme_switcher.dart';
 import 'package:provider/provider.dart';
 import 'package:jcrg/widgets/theme_manager.dart';
+import 'package:jcrg/widgets/calendar.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+
 final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier(ThemeMode.system);
 
 
@@ -29,11 +32,19 @@ class TaskManagerApp extends StatelessWidget {
       darkTheme: ThemeData.dark(),
       themeMode: themeNotifier.themeMode, // Usamos el ThemeNotifier para manejar el tema
       home: const TaskManagerScreen(), // Pantalla principal
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('es', 'ES'), // Español
+        Locale('en', 'US'), // Inglés (por defecto)
+      ],
+      locale: const Locale('es', 'ES'), // Forzar español como idioma
     );
   }
 }
-
-
 
 class TaskManagerScreen extends StatefulWidget {
   const TaskManagerScreen({Key? key}) : super(key: key);
@@ -241,7 +252,21 @@ Widget build(BuildContext context) {
       ),
       actions: [
         ThemeSwitcher(),
+       IconButton(
+          icon: const Icon(Icons.calendar_today),
+          color: Colors.white,  // Ícono de calendario
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => CalendarScreen(tasks: priorities),
+              ),
+            );
+          },
+          tooltip: 'Ver Calendario',
+        ),
       ],
+      
     ),
     
 body: Stack(
