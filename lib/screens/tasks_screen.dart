@@ -248,7 +248,12 @@ Widget build(BuildContext context) {
       title: const Text('Gestión de Tareas', style: TextStyle(color: Colors.white)),
       backgroundColor: const Color.fromARGB(255, 107, 135, 182),
       leading: Center(
-        child: FlutterLogo(size:25),
+          child: Image.asset(
+            'lib/assets/Log/LOGO.png', // Asegúrate de que esta ruta sea correcta
+            height: 75,
+            width: 75,
+            fit: BoxFit.contain, // Ajusta la imagen si es necesario
+          ),
       ),
       actions: [
         ThemeSwitcher(),
