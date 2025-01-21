@@ -5,6 +5,8 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:jcrg/screens/projects_screen.dart';
 import 'package:jcrg/screens/deliveries.dart';
 import 'package:jcrg/screens/impressions.dart';
+import 'package:jcrg/screens/meetings.dart';
+
 
 class NavigationScreen extends StatefulWidget {
   final List<dynamic> tasks;
@@ -68,14 +70,19 @@ class _NavigationScreenState extends State<NavigationScreen> {
             body: const ProjectManager(),
             items: [
               PaneItem(
-                icon: const Icon(FluentIcons.project_management),
-                title: const Text('Gestión de Proyectos'),
+                icon: const Icon(FluentIcons.project_document),
+                title: const Text('Proyectos'),
                 body: const ProjectManager(),
               ),
               PaneItem(
                 icon: const Icon(FluentIcons.send_mirrored),
                 title: const Text('Entregas'),
                 body: DeliveriesScreen(), // Submenú para entregas
+              ),
+              PaneItem(
+                icon: const Icon(FluentIcons.group),
+                title: const Text('Reuniones'),
+                body: MeetingsScreen(), // Submenú para entregas
               ),
             ],
           ),
