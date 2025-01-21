@@ -185,10 +185,17 @@ Padding(
         ),
       ),
     ),
-    child: ElevatedButton(
-      onPressed: () => _showContactDialog(isEditing: false),
-      child: const Text('Añadir Contacto'),
-    ),
+child: ElevatedButton.icon(
+  onPressed: () => _showContactDialog(isEditing: false),
+  icon: const Icon(Icons.add), // Icono de "más"
+  label: const Text('Añadir Contacto'), // Texto del botón
+  style: ElevatedButton.styleFrom(
+    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12), // Tamaño del botón
+    backgroundColor: const Color.fromARGB(255, 76, 78, 175), // Color de fondo
+    foregroundColor: Colors.white, // Color del texto e ícono
+  ),
+),
+
   ),
 ),
 

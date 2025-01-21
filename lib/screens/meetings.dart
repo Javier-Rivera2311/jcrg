@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:jcrg/screens/theme_switcher.dart'; // No se elimina el import
+import 'package:intl/intl.dart';
 
 class MeetingsScreen extends StatefulWidget {
   const MeetingsScreen({Key? key}) : super(key: key);
@@ -308,17 +309,21 @@ void _showAddMeetingDialog({int? index}) {
           final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
           return AlertDialog(
-            backgroundColor: isDarkMode
-                ? const Color.fromARGB(255, 40, 40, 40)
-                : Colors.white, // Cambia según el tema
-            title: Text(
-              index == null ? 'Agregar Reunión' : 'Editar Reunión',
-              style: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
+          backgroundColor: Theme.of(context).brightness == Brightness.dark
+              ? const Color.fromARGB(255, 40, 40, 40) // Fondo oscuro
+              : Colors.white, // Fondo claro
+          title: Text(
+            index == null ? 'Agregar Reunión' : 'Editar Reunión',
+            style: TextStyle(
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white
+                  : Colors.black, // Color del texto según el tema
             ),
-            content: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
                   TextField(
                     controller: _titleController,
                     style: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
@@ -358,7 +363,7 @@ void _showAddMeetingDialog({int? index}) {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'Fecha: ${_selectedDate.toLocal().toString().split(' ')[0]}',
+                            'Fecha: ${DateFormat('dd/MM/yyyy').format(_selectedDate)}',
                             style:
                                 TextStyle(color: isDarkMode ? Colors.white : Colors.black),
                           ),
@@ -491,120 +496,126 @@ void _showAddMeetingDialog({int? index}) {
   );
 }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Gestión de Reuniones',style: TextStyle(color: Colors.white)),
-        backgroundColor: const Color.fromARGB(255, 107, 135, 182),
-        leading: Center(
+@override
+Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(
+      title: const Text('Gestión de Reuniones', style: TextStyle(color: Colors.white)),
+      backgroundColor: const Color.fromARGB(255, 107, 135, 182),
+      leading: Center(
         child: Image.asset(
-            'lib/assets/Log/LOGO.png', // Asegúrate de que esta ruta sea correcta
-            height: 75,
-            width: 75,
-            fit: BoxFit.contain, // Ajusta la imagen si es necesario
-          ),
+          'lib/assets/Log/LOGO.png',
+          height: 75,
+          width: 75,
+          fit: BoxFit.contain,
+        ),
       ),
-        actions: [
-          ThemeSwitcher(),
-          IconButton(
-            icon: const Icon(Icons.add, color: Colors.white),
-            onPressed: _showAddMeetingDialog,
-            tooltip: 'Agregar Reunión',
-          ),
-        ],
-      ),
-body: Padding(
-  padding: const EdgeInsets.only(top: 16.0, left: 16.0, right: 16.0),
-  child: Container(
-    width: double.infinity,
-    constraints: const BoxConstraints(maxWidth: 800),
-    child: SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: DataTable(
-
-        columns: const [
-          DataColumn(
-            label: Text(
-              'Título',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-          ),
-          DataColumn(
-            label: Text(
-              'Fecha',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-          ),
-          DataColumn(
-            label: Text(
-              'Hora',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-          ),
-          DataColumn(
-            label: Text(
-              'Tipo',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-          ),
-          DataColumn(
-            label: Text(
-              'Ubicación',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-          ),
-          DataColumn(
-            label: Text(
-              'Acciones',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-          ),
-        ],
-        rows: meetings.asMap().entries.map((entry) {
-          final index = entry.key;
-          final meeting = entry.value;
-          return DataRow(
-            cells: [
-              DataCell(Text(meeting['title'] ?? '')),
-              DataCell(Text(DateTime.parse(meeting['date'])
-                  .toLocal()
-                  .toString()
-                  .split(' ')[0])),
-              DataCell(Text(meeting['time'] ?? '')),
-              DataCell(Text(meeting['type'] ?? '')),
-              DataCell(Text(meeting['type'] == 'presencial'
-                  ? (meeting['location'] ?? '')
-                  : 'N/A')),
-              DataCell(Row(
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.edit, color: Colors.blue),
-                    onPressed: () => _editMeeting(index),
-                    tooltip: 'Editar Reunión',
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.delete, color: Colors.red),
-                    onPressed: () => _deleteMeeting(index),
-                    tooltip: 'Borrar Reunión',
-                  ),
-                ],
-              )),
+      actions: [
+        ThemeSwitcher(),
+        IconButton(
+          icon: const Icon(Icons.add, color: Colors.white),
+          onPressed: _showAddMeetingDialog,
+          tooltip: 'Agregar Reunión',
+        ),
+      ],
+    ),
+    body: Padding(
+      padding: const EdgeInsets.only(top: 16.0, left: 16.0, right: 16.0),
+      child: Container(
+        width: double.infinity,
+        constraints: const BoxConstraints(maxWidth: 800),
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: DataTable(
+            columns: const [
+              DataColumn(
+                label: Text(
+                  'Título',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+              DataColumn(
+                label: Text(
+                  'Fecha',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+              DataColumn(
+                label: Text(
+                  'Hora',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+              DataColumn(
+                label: Text(
+                  'Tipo',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+              DataColumn(
+                label: Text(
+                  'Ubicación',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+              DataColumn(
+                label: Text(
+                  'Acciones',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
             ],
-          );
-        }).toList(),
+            rows: meetings.asMap().entries.map((entry) {
+              final index = entry.key;
+              final meeting = entry.value;
+              return DataRow(
+                cells: [
+                  DataCell(Text(meeting['title'] ?? '')),
+                  DataCell(Text(DateFormat('dd/MM/yyyy').format(DateTime.parse(meeting['date']).toLocal()))),
+                  DataCell(Text(meeting['time'] ?? '')),
+                  DataCell(Text(meeting['type'] ?? '')),
+                  DataCell(Text(meeting['type'] == 'presencial'
+                      ? (meeting['location'] ?? '')
+                      : 'N/A')),
+                  DataCell(Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.edit, color: Colors.blue),
+                        onPressed: () => _editMeeting(index),
+                        tooltip: 'Editar Reunión',
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.delete, color: Colors.red),
+                        onPressed: () => _deleteMeeting(index),
+                        tooltip: 'Borrar Reunión',
+                      ),
+                    ],
+                  )),
+                ],
+              );
+            }).toList(),
+          ),
+        ),
       ),
     ),
+floatingActionButton: Align(
+  alignment: Alignment.bottomCenter,
+  child: FloatingActionButton.extended(
+    onPressed: _showAddMeetingDialog,
+    backgroundColor: const Color.fromARGB(255, 76, 78, 175), // Color de fondo
+    icon: const Icon(Icons.add, color: Colors.white), // Ícono a la izquierda
+    label: const Text('Añadir reunión', style: TextStyle(color: Colors.white)), // Texto del botón
+    tooltip: 'Añadir nueva reunión',
   ),
 ),
 
-
-    );
-  }
+    
+  );
+}
 }

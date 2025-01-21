@@ -48,9 +48,7 @@ class DeliveriesScreenState extends State<DeliveriesScreen> {
 
   void _addDelivery() {
     if (_titleController.text.isEmpty || _assigneeController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Por favor, completa todos los campos')),
-      );
+
       return;
     }
 
