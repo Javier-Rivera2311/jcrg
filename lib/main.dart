@@ -29,7 +29,7 @@ return FluentApp(
     accentColor: Colors.blue,
   ),
   themeMode: themeNotifier.themeMode, // Cambia entre tema claro y oscuro
-  home: const NavigationScreen(),
+  home: const NavigationScreen(tasks: [],),
 );
 
   }
