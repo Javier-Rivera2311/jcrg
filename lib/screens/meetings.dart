@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:jcrg/screens/theme_switcher.dart'; // No se elimina el import
 import 'package:intl/intl.dart';
+import 'package:flutter/services.dart';
 
 class MeetingsScreen extends StatefulWidget {
   const MeetingsScreen({Key? key}) : super(key: key);
@@ -684,86 +685,248 @@ Widget build(BuildContext context) {
         ),
       ],
     ),
+
+//Vista del contenido en una tabla
+
 body: Padding(
   padding: const EdgeInsets.all(16.0),
   child: Column(
     crossAxisAlignment: CrossAxisAlignment.start,
-    mainAxisSize: MainAxisSize.min,
     children: [
-      const SizedBox(height: 16), // Espacio entre el título y la barra de búsqueda
-TextField(
-  onChanged: _filterMeetings,
-  decoration: InputDecoration(
-    prefixIcon: const Icon(Icons.search),
-    hintText: 'Buscar reunión',
-    border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(8),
-      borderSide: const BorderSide(color: Colors.grey),
+      const SizedBox(height: 16),
+      // Barra de búsqueda
+      TextField(
+        onChanged: _filterMeetings,
+        decoration: InputDecoration(
+          prefixIcon: const Icon(Icons.search),
+          hintText: 'Buscar reunión',
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: const BorderSide(color: Colors.grey),
+          ),
+        ),
+      ),
+      const SizedBox(height: 16),
+      // Tabla
+Expanded(
+  child: Padding(
+    padding: const EdgeInsets.only(top: 16.0), // Espaciado debajo de la barra de búsqueda
+    child: SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: DataTable(
+        headingRowColor: MaterialStateProperty.resolveWith<Color>(
+          (Set<MaterialState> states) =>
+              Theme.of(context).brightness == Brightness.dark
+                  ? const Color.fromARGB(255, 60, 60, 60)
+                  : const Color.fromARGB(255, 230, 230, 230),
+        ),
+        columnSpacing: 32.0,
+        horizontalMargin: 16.0,
+        columns: const [
+          DataColumn(
+            label: Text(
+              'Título',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+            ),
+          ),
+          DataColumn(
+            label: Text(
+              'Fecha',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+            ),
+          ),
+          DataColumn(
+            label: Text(
+              'Hora',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+            ),
+          ),
+          DataColumn(
+            label: Text(
+              'Tipo',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+            ),
+          ),
+          DataColumn(
+            label: Text(
+              'Detalles (Link / ubicación)',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+            ),
+          ),
+          DataColumn(
+            label: Text(
+              'Editar',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+            ),
+          ),
+          DataColumn(
+            label: Text(
+              'Borrar',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+            ),
+          ),
+        ],
+        rows: filteredMeetings.map((meeting) {
+          final bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+          return DataRow(
+            color: MaterialStateProperty.resolveWith<Color>(
+              (Set<MaterialState> states) => filteredMeetings.indexOf(meeting) % 2 == 0
+                  ? (isDarkMode
+                      ? const Color.fromARGB(255, 50, 50, 50)
+                      : const Color.fromARGB(255, 245, 245, 245))
+                  : (isDarkMode
+                      ? const Color.fromARGB(255, 40, 40, 40)
+                      : Colors.white),
+            ),
+            cells: [
+              DataCell(Text(
+                meeting['title'] ?? 'Sin título',
+                style: TextStyle(
+                    color: isDarkMode ? Colors.white : Colors.black,
+                    fontSize: 18),
+              )),
+              DataCell(Text(
+                DateFormat('dd/MM/yyyy')
+                    .format(DateTime.parse(meeting['date']).toLocal()),
+                style: TextStyle(
+                    color: isDarkMode ? Colors.white : Colors.black,
+                    fontSize: 18),
+              )),
+              DataCell(Text(
+                meeting['time'] ?? '',
+                style: TextStyle(
+                    color: isDarkMode ? Colors.white : Colors.black,
+                    fontSize: 18),
+              )),
+              DataCell(Text(
+                meeting['type'] ?? '',
+                style: TextStyle(
+                    color: isDarkMode ? Colors.white : Colors.black,
+                    fontSize: 18),
+              )),
+DataCell(
+  meeting['type'] == 'presencial'
+      ? Row(
+          children: [
+            Expanded(
+              child: Text(
+                meeting['location'] != null && meeting['location']!.length > 15
+                    ? '${meeting['location']!.substring(0, 15)}...' // Mostrar solo los primeros 15 caracteres
+                    : meeting['location'] ?? 'N/A',
+                style: TextStyle(
+                    color: isDarkMode ? Colors.white : Colors.black,
+                    fontSize: 18),
+              ),
+            ),
+            IconButton(
+              icon: const Icon(Icons.copy, color: Colors.blue),
+              tooltip: 'Copiar ubicación',
+              onPressed: () {
+                if (meeting['location'] != null) {
+                  Clipboard.setData(
+                      ClipboardData(text: meeting['location']!));
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: const Text('Ubicación copiada'),
+                        content: const Text(
+                            'La ubicación se ha copiado al portapapeles.'),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            child: const Text('Aceptar'),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                }
+              },
+            ),
+          ],
+        )
+      : Row(
+          children: [
+            Expanded(
+              child: Text(
+                meeting['url'] != null && meeting['url']!.length > 15
+                    ? '${meeting['url']!.substring(0, 40)}...' // Mostrar solo los primeros 15 caracteres
+                    : meeting['url'] ?? 'N/A',
+                style: const TextStyle(color: Colors.blue, fontSize: 18),
+              ),
+            ),
+            IconButton(
+              icon: const Icon(Icons.copy, color: Colors.blue),
+              tooltip: 'Copiar URL',
+              onPressed: () {
+                if (meeting['url'] != null) {
+                  Clipboard.setData(
+                      ClipboardData(text: meeting['url']!));
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: const Text('URL copiada'),
+                        content: const Text(
+                            'El URL se ha copiado al portapapeles.'),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            child: const Text('Aceptar'),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                }
+              },
+            ),
+          ],
+        ),
+),
+
+              DataCell(
+                IconButton(
+                  icon: const Icon(Icons.edit, color: Colors.blue),
+                  tooltip: 'Editar reunión',
+                  onPressed: () =>
+                      _editMeeting(filteredMeetings.indexOf(meeting)),
+                ),
+              ),
+              DataCell(
+                IconButton(
+                  icon: const Icon(Icons.delete, color: Colors.red),
+                  tooltip: 'Borrar reunión',
+                  onPressed: () =>
+                      _deleteMeeting(meetings.indexOf(meeting)),
+                ),
+              ),
+            ],
+          );
+        }).toList(),
+      ),
     ),
   ),
 ),
 
-      const SizedBox(height: 16), // Espacio entre la barra de búsqueda y la lista
-Expanded(
-  child: ListView(
-    children: filteredMeetings.map((meeting) {
-      return Card(
-        margin: const EdgeInsets.symmetric(vertical: 8),
-        child: ListTile(
-          title: Text(
-            meeting['title'] ?? 'Sin título',
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
-          subtitle: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Fecha: ${DateFormat('dd/MM/yyyy').format(DateTime.parse(meeting['date']).toLocal())}'),
-              Text('Hora: ${meeting['time']}'),
-              Text('Tipo: ${meeting['type']}'),
-              if (meeting['type'] == 'presencial')
-                Text('Ubicación: ${meeting['location'] ?? 'N/A'}'),
-              
-              if (meeting['type'] == 'remoto')
-                Text('Url/Link: ${meeting['url'] ?? 'N/A'}'),
-              
-            ],
-          ),
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              IconButton(
-                icon: const Icon(Icons.edit, color: Colors.blue),
-                onPressed: () => _editMeeting(filteredMeetings.indexOf(meeting)),
-              ),
-              IconButton(
-                icon: const Icon(Icons.delete, color: Colors.red),
-                onPressed: () => _deleteMeeting(meetings.indexOf(meeting)),
-              ),
-            ],
-          ),
-        ),
-      );
-    }).toList(),
-  ),
-),
 
     ],
   ),
 ),
-
-
 floatingActionButton: Align(
   alignment: Alignment.bottomCenter,
   child: FloatingActionButton.extended(
     onPressed: _showAddMeetingDialog,
-    backgroundColor: const Color.fromARGB(255, 76, 78, 175), // Color de fondo
-    icon: const Icon(Icons.add, color: Colors.white), // Ícono a la izquierda
-    label: const Text('Añadir reunión', style: TextStyle(color: Colors.white)), // Texto del botón
+    backgroundColor: const Color.fromARGB(255, 76, 78, 175),
+    icon: const Icon(Icons.add, color: Colors.white),
+    label: const Text('Añadir reunión', style: TextStyle(color: Colors.white)),
     tooltip: 'Añadir nueva reunión',
   ),
 ),
 
-    
+
   );
 }
 }

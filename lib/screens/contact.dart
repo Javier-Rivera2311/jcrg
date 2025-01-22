@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:jcrg/screens/theme_switcher.dart';
+import 'package:flutter/services.dart';
 
 void main() {
   runApp(ContactManagerApp());
@@ -52,9 +53,7 @@ class _ContactManagerScreenState extends State<ContactManagerScreen> {
       }
     } catch (e) {
       print('Error al leer el archivo: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al cargar contactos: $e')),
-      );
+
     }
   }
 
@@ -94,31 +93,35 @@ class _ContactManagerScreenState extends State<ContactManagerScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    final filteredContacts = _contacts
-        .where((contact) => contact['name']!.toLowerCase().contains(_searchQuery.toLowerCase()))
-        .toList();
+Widget build(BuildContext context) {
+  final filteredContacts = _contacts
+      .where((contact) => contact['name']!.toLowerCase().contains(_searchQuery.toLowerCase()))
+      .toList();
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Gestión de Contactos', style: TextStyle(color: Colors.white)),
-        backgroundColor: const Color.fromARGB(255, 107, 135, 182),
-        leading: Center(
-          child: Image.asset(
-            'lib/assets/Log/LOGO.png', // Asegúrate de que esta ruta sea correcta
-            height: 75,
-            width: 75,
-            fit: BoxFit.contain, // Ajusta la imagen si es necesario
-          ),
+  return Scaffold(
+    appBar: AppBar(
+      title: const Text('Gestión de Contactos', style: TextStyle(color: Colors.white)),
+      backgroundColor: const Color.fromARGB(255, 107, 135, 182),
+      leading: Center(
+        child: Image.asset(
+          'lib/assets/Log/LOGO.png',
+          height: 75,
+          width: 75,
+          fit: BoxFit.contain,
+        ),
       ),
       actions: [
         ThemeSwitcher(),
       ],
-      ),
-      body: Column(
+    ),
+    body: Padding(
+      padding: const EdgeInsets.all(16.0), // Espaciado alrededor del contenido
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start, // Alinea todo a la izquierda
         children: [
+          // Barra de búsqueda
           Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.only(bottom: 16.0),
             child: TextField(
               controller: _searchController,
               onChanged: (value) {
@@ -133,74 +136,211 @@ class _ContactManagerScreenState extends State<ContactManagerScreen> {
               ),
             ),
           ),
-          Expanded(
-            child: SingleChildScrollView(
-              child: DataTable(
-                columns: const [
-                  DataColumn(label: Text('Nombre y Apellido')),
-                  DataColumn(label: Text('Correo')),
-                  DataColumn(label: Text('Teléfono')),
-                  DataColumn(label: Text('Editar')),
-                  DataColumn(label: Text('Borrar')),
-                ],
-                rows: filteredContacts.map((contact) {
-                  final index = _contacts.indexOf(contact);
-                  return DataRow(cells: [
-                    DataCell(Text(contact['name']!)),
-                    DataCell(Text(contact['email']!)),
-                    DataCell(Text(contact['phone']!)),
-                    DataCell(IconButton(
-                      icon: const Icon(Icons.edit, color: Colors.blue),
-                      onPressed: () {
-                        _showContactDialog(
-                          isEditing: true,
-                          index: index,
-                          contact: contact,
-                        );
-                      },
-                    )),
-                    DataCell(IconButton(
-                      icon: const Icon(Icons.delete, color: Colors.red),
-                      onPressed: () => _deleteContact(index),
-                    )),
-                  ]);
-                }).toList(),
+          // Tabla de contactos
+ Expanded(
+  child: SingleChildScrollView(
+    scrollDirection: Axis.horizontal, // Habilita desplazamiento horizontal
+    child: ConstrainedBox(
+      constraints: const BoxConstraints(minWidth: 800), // Ancho mínimo para evitar recorte
+      child: DataTable(
+        headingRowColor: MaterialStateProperty.resolveWith<Color>(
+          (Set<MaterialState> states) =>
+              Theme.of(context).brightness == Brightness.dark
+                  ? const Color.fromARGB(255, 60, 60, 60)
+                  : const Color.fromARGB(255, 230, 230, 230),
+        ),
+        columnSpacing: 32.0,
+        horizontalMargin: 16.0,
+        columns: const [
+          DataColumn(
+            label: Center(
+              child: Text(
+                'Nombre y Apellido',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
               ),
             ),
           ),
-Padding(
-  padding: const EdgeInsets.all(8.0),
-  child: Theme(
-    data: Theme.of(context).copyWith(
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ButtonStyle(
-          backgroundColor: MaterialStateProperty.all(const Color.fromARGB(255, 76, 78, 175)), // Cambia el color de fondo
-          foregroundColor: MaterialStateProperty.all(Colors.white), // Cambia el color del texto
-          padding: MaterialStateProperty.all(
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 12), // Ajusta el tamaño del botón
+          DataColumn(
+            label: Center(
+              child: Text(
+                'Correo',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              ),
+            ),
           ),
-          textStyle: MaterialStateProperty.all(
-            const TextStyle(fontSize: 16), // Ajusta el estilo del texto
+          DataColumn(
+            label: Center(
+              child: Text(
+                'Teléfono',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              ),
+            ),
           ),
-        ),
-      ),
-    ),
-    child: ElevatedButton.icon(
-      onPressed: () => _showContactDialog(isEditing: false),
-      icon: const Icon(Icons.add), // Icono de "más"
-      label: const Text('Añadir Contacto'), // Texto del botón
-      style: ElevatedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12), // Tamaño del botón
-        backgroundColor: const Color.fromARGB(255, 76, 78, 175), // Color de fondo
-        foregroundColor: Colors.white, // Color del texto e ícono
-               ),
+          DataColumn(
+            label: Center(
+              child: Text(
+                'Editar',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              ),
+            ),
+          ),
+          DataColumn(
+            label: Center(
+              child: Text(
+                'Borrar',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
               ),
             ),
           ),
         ],
+        rows: filteredContacts.map((contact) {
+          final index = _contacts.indexOf(contact);
+          final bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+          return DataRow(
+            color: MaterialStateProperty.resolveWith<Color>(
+              (Set<MaterialState> states) => index % 2 == 0
+                  ? (isDarkMode
+                      ? const Color.fromARGB(255, 50, 50, 50)
+                      : const Color.fromARGB(255, 245, 245, 245))
+                  : (isDarkMode
+                      ? const Color.fromARGB(255, 40, 40, 40)
+                      : Colors.white),
+            ),
+            cells: [
+              DataCell(Text(
+                contact['name']!,
+                style: TextStyle(
+                    color: isDarkMode ? Colors.white : Colors.black, fontSize: 18),
+              )),
+              DataCell(
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        contact['email']!,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                            color: isDarkMode ? Colors.white : Colors.blue, fontSize: 18),
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.copy, color: Colors.blue),
+                      tooltip: 'Copiar correo',
+                      onPressed: () {
+                        Clipboard.setData(ClipboardData(text: contact['email']!));
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: const Text('Correo copiado'),
+                              content: const Text(
+                                  'El correo se ha copiado al portapapeles.'),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.of(context).pop(),
+                                  child: const Text('Aceptar'),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              DataCell(
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        contact['phone']!,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                            color: isDarkMode ? Colors.white : Colors.black, fontSize: 18),
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.copy, color: Colors.blue),
+                      tooltip: 'Copiar teléfono',
+                      onPressed: () {
+                        Clipboard.setData(ClipboardData(text: contact['phone']!));
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: const Text('Teléfono copiado'),
+                              content: const Text(
+                                  'El teléfono se ha copiado al portapapeles.'),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.of(context).pop(),
+                                  child: const Text('Aceptar'),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              DataCell(
+                IconButton(
+                  icon: const Icon(Icons.edit, color: Colors.blue),
+                  tooltip: 'Editar contacto',
+                  onPressed: () {
+                    _showContactDialog(
+                      isEditing: true,
+                      index: index,
+                      contact: contact,
+                    );
+                  },
+                ),
+              ),
+              DataCell(
+                IconButton(
+                  icon: const Icon(Icons.delete, color: Colors.red),
+                  tooltip: 'Borrar contacto',
+                  onPressed: () => _deleteContact(index),
+                ),
+              ),
+            ],
+          );
+        }).toList(),
       ),
-    );
-  }
+    ),
+  ),
+),
+
+          // Botón para añadir contacto
+Padding(
+  padding: const EdgeInsets.only(top: 16.0),
+  child: Row(
+    mainAxisAlignment: MainAxisAlignment.center, // Centra el botón horizontalmente
+    children: [
+      ElevatedButton.icon(
+        onPressed: () => _showContactDialog(isEditing: false),
+        icon: const Icon(Icons.add),
+        label: const Text('Añadir Contacto'),
+        style: ElevatedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          backgroundColor: const Color.fromARGB(255, 76, 78, 175),
+          foregroundColor: Colors.white,
+        ),
+      ),
+    ],
+  ),
+),
+
+        ],
+      ),
+    ),
+  );
+}
+
 
   void _showContactDialog({bool isEditing = false, int? index, Map<String, String>? contact}) {
     final TextEditingController nameController = TextEditingController(
