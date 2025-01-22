@@ -36,13 +36,14 @@ Future<void> _loadMeetings() async {
       final content = await file.readAsString();
       setState(() {
         meetings = json.decode(content);
-        filteredMeetings = List.from(meetings); // Copia la lista original
+        _sortMeetingsByDate(); // Ordenar las reuniones al cargarlas
       });
     }
   } catch (e) {
     print('Error al leer el archivo: $e');
   }
 }
+
 
 
   Future<void> _saveMeetings() async {
@@ -66,7 +67,16 @@ void _filterMeetings(String query) {
     }
   });
 }
-
+void _sortMeetingsByDate() {
+  setState(() {
+    meetings.sort((a, b) {
+      final dateA = DateTime.parse(a['date']);
+      final dateB = DateTime.parse(b['date']);
+      return dateA.compareTo(dateB); // Ordena de la más cercana a la más lejana
+    });
+    filteredMeetings = List.from(meetings); // Asegúrate de actualizar la lista filtrada
+  });
+}
 
 void _addMeeting() {
   if (_titleController.text.isEmpty ||
@@ -85,7 +95,7 @@ void _addMeeting() {
     };
 
     meetings.add(newMeeting);
-    _filterMeetings(''); // Actualiza la lista filtrada para mostrar la nueva reunión
+    _sortMeetingsByDate(); // Ordenar reuniones
   });
 
   _titleController.clear();
@@ -150,121 +160,119 @@ void _editMeeting(int index) {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  //AJUSTE CUADRO DE DIALOGO DE EDITAR REUNION
-                    GestureDetector(
-                      onTap: () async {
-                        final DateTime? pickedDate = await showDatePicker(
-                          context: context,
-                          initialDate: _selectedDate,
-                          firstDate: DateTime(2000),
-                          lastDate: DateTime(2101),
-                          builder: (BuildContext context, Widget? child) {
-                            return Theme(
-                              data: ThemeData(
-                                colorScheme: Theme.of(context).brightness == Brightness.dark
-                                    ? ColorScheme.dark(
-                                        primary: Colors.blue, // Color del botón principal
-                                        surface: Colors.grey[900]!, // Fondo sólido oscuro
-                                        onSurface: Colors.white, // Color del texto
-                                      )
-                                    : ColorScheme.light(
-                                        primary: Colors.blue, // Color del botón principal
-                                        surface: Colors.white, // Fondo sólido claro
-                                        onSurface: Colors.black, // Color del texto
-                                      ),
-                              ),
-                              child: child!,
-                            );
-                          },
-                        );
-                        if (pickedDate != null) {
-                          setDialogState(() {
-                            _selectedDate = pickedDate;
-                          });
-                        }
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            color: isDarkMode ? Colors.grey : Colors.black45,
-                          ),
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Fecha: ${DateFormat('dd/MM/yyyy').format(_selectedDate)}',
-                              style: TextStyle(
-                                color: isDarkMode ? Colors.white : Colors.black,
-                              ),
+                  GestureDetector(
+                    onTap: () async {
+                      final DateTime? pickedDate = await showDatePicker(
+                        context: context,
+                        initialDate: _selectedDate,
+                        firstDate: DateTime(2000),
+                        lastDate: DateTime(2101),
+                        builder: (BuildContext context, Widget? child) {
+                          return Theme(
+                            data: ThemeData(
+                              colorScheme: Theme.of(context).brightness == Brightness.dark
+                                  ? ColorScheme.dark(
+                                      primary: Colors.blue,
+                                      surface: Colors.grey[900]!,
+                                      onSurface: Colors.white,
+                                    )
+                                  : ColorScheme.light(
+                                      primary: Colors.blue,
+                                      surface: Colors.white,
+                                      onSurface: Colors.black,
+                                    ),
                             ),
-                            Icon(
-                              Icons.calendar_today,
+                            child: child!,
+                          );
+                        },
+                      );
+                      if (pickedDate != null) {
+                        setDialogState(() {
+                          _selectedDate = pickedDate;
+                        });
+                      }
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: isDarkMode ? Colors.grey : Colors.black45,
+                        ),
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Fecha: ${DateFormat('dd/MM/yyyy').format(_selectedDate)}',
+                            style: TextStyle(
                               color: isDarkMode ? Colors.white : Colors.black,
                             ),
-                          ],
-                        ),
+                          ),
+                          Icon(
+                            Icons.calendar_today,
+                            color: isDarkMode ? Colors.white : Colors.black,
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    GestureDetector(
-                      onTap: () async {
-                        final TimeOfDay? pickedTime = await showTimePicker(
-                          context: context,
-                          initialTime: _selectedTime,
-                          builder: (BuildContext context, Widget? child) {
-                            return Theme(
-                              data: ThemeData(
-                                colorScheme: Theme.of(context).brightness == Brightness.dark
-                                    ? ColorScheme.dark(
-                                        primary: Colors.blue, // Color del botón principal
-                                        surface: Colors.grey[900]!, // Fondo sólido oscuro
-                                        onSurface: Colors.white, // Color del texto
-                                      )
-                                    : ColorScheme.light(
-                                        primary: Colors.blue, // Color del botón principal
-                                        surface: Colors.white, // Fondo sólido claro
-                                        onSurface: Colors.black, // Color del texto
-                                      ),
-                              ),
-                              child: child!,
-                            );
-                          },
-                        );
-                        if (pickedTime != null) {
-                          setDialogState(() {
-                            _selectedTime = pickedTime;
-                          });
-                        }
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            color: isDarkMode ? Colors.grey : Colors.black45,
-                          ),
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Hora: ${_selectedTime.format(context)}',
-                              style: TextStyle(
-                                color: isDarkMode ? Colors.white : Colors.black,
-                              ),
+                  ),
+                  const SizedBox(height: 8),
+                  GestureDetector(
+                    onTap: () async {
+                      final TimeOfDay? pickedTime = await showTimePicker(
+                        context: context,
+                        initialTime: _selectedTime,
+                        builder: (BuildContext context, Widget? child) {
+                          return Theme(
+                            data: ThemeData(
+                              colorScheme: Theme.of(context).brightness == Brightness.dark
+                                  ? ColorScheme.dark(
+                                      primary: Colors.blue,
+                                      surface: Colors.grey[900]!,
+                                      onSurface: Colors.white,
+                                    )
+                                  : ColorScheme.light(
+                                      primary: Colors.blue,
+                                      surface: Colors.white,
+                                      onSurface: Colors.black,
+                                    ),
                             ),
-                            Icon(
-                              Icons.access_time,
+                            child: child!,
+                          );
+                        },
+                      );
+                      if (pickedTime != null) {
+                        setDialogState(() {
+                          _selectedTime = pickedTime;
+                        });
+                      }
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: isDarkMode ? Colors.grey : Colors.black45,
+                        ),
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Hora: ${_selectedTime.format(context)}',
+                            style: TextStyle(
                               color: isDarkMode ? Colors.white : Colors.black,
                             ),
-                          ],
-                        ),
+                          ),
+                          Icon(
+                            Icons.access_time,
+                            color: isDarkMode ? Colors.white : Colors.black,
+                          ),
+                        ],
                       ),
                     ),
-// FIN DE CUADRO DE DIALOGO DE EDITAR REUNION
+                  ),
                   const SizedBox(height: 8),
                   DropdownButtonFormField<String>(
                     value: _meetingType,
@@ -350,7 +358,8 @@ void _editMeeting(int index) {
                           ? _urlController.text
                           : null,
                     };
-                    filteredMeetings = List.from(meetings); // Actualizar la lista filtrada
+                    _sortMeetingsByDate(); // Ordenar reuniones después de editar
+                    filteredMeetings = List.from(meetings); // Actualizar lista filtrada
                   });
                   _saveMeetings();
                   Navigator.pop(context);
@@ -365,6 +374,7 @@ void _editMeeting(int index) {
     },
   );
 }
+
 
 
 void _showAddMeetingDialog({int? index}) {
@@ -851,8 +861,8 @@ DataCell(
           children: [
             Expanded(
               child: Text(
-                meeting['url'] != null && meeting['url']!.length > 15
-                    ? '${meeting['url']!.substring(0, 40)}...' // Mostrar solo los primeros 15 caracteres
+                meeting['url'] != null && meeting['url']!.length > 40
+                    ? '${meeting['url']!.substring(0, 40)}...' // Mostrar solo los primeros 40caracteres
                     : meeting['url'] ?? 'N/A',
                 style: const TextStyle(color: Colors.blue, fontSize: 18),
               ),

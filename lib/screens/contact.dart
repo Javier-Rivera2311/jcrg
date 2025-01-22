@@ -342,67 +342,108 @@ Padding(
 }
 
 
-  void _showContactDialog({bool isEditing = false, int? index, Map<String, String>? contact}) {
-    final TextEditingController nameController = TextEditingController(
-      text: isEditing ? contact!['name'] : "",
-    );
-    final TextEditingController emailController = TextEditingController(
-      text: isEditing ? contact!['email'] : "",
-    );
-    final TextEditingController phoneController = TextEditingController(
-      text: isEditing ? contact!['phone'] : "",
-    );
+ void _showContactDialog({bool isEditing = false, int? index, Map<String, String>? contact}) {
+  final TextEditingController nameController = TextEditingController(
+    text: isEditing ? contact!['name'] : "",
+  );
+  final TextEditingController emailController = TextEditingController(
+    text: isEditing ? contact!['email'] : "",
+  );
+  final TextEditingController phoneController = TextEditingController(
+    text: isEditing ? contact!['phone'] : "",
+  );
 
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text(isEditing ? 'Editar Contacto' : 'Añadir Contacto'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: nameController,
-                decoration: const InputDecoration(labelText: 'Nombre y Apellido'),
+  showDialog(
+    context: context,
+    builder: (context) {
+      final bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+      return AlertDialog(
+        backgroundColor: isDarkMode
+            ? const Color.fromARGB(255, 40, 40, 40) // Fondo oscuro para modo oscuro
+            : Colors.white, // Fondo claro para modo claro
+        title: Text(
+          isEditing ? 'Editar Contacto' : 'Añadir Contacto',
+          style: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: nameController,
+              style: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
+              decoration: InputDecoration(
+                labelText: 'Nombre y Apellido',
+                labelStyle: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
+                border: const OutlineInputBorder(),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(
+                      color: isDarkMode ? Colors.grey : Colors.black45),
+                ),
               ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: emailController,
-                decoration: const InputDecoration(labelText: 'Correo'),
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: phoneController,
-                decoration: const InputDecoration(labelText: 'Teléfono'),
-                keyboardType: TextInputType.phone,
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancelar'),
             ),
-            TextButton(
-              onPressed: () {
-                final name = nameController.text.trim();
-                final email = emailController.text.trim();
-                final phone = phoneController.text.trim();
-
-                if (name.isNotEmpty && email.isNotEmpty && phone.isNotEmpty) {
-                  if (isEditing && index != null) {
-                    _editContact(index, name, email, phone);
-                  } else {
-                    _addContact(name, email, phone);
-                  }
-                  Navigator.pop(context);
-                }
-              },
-              child: const Text('Guardar'),
+            const SizedBox(height: 10),
+            TextField(
+              controller: emailController,
+              style: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
+              decoration: InputDecoration(
+                labelText: 'Correo',
+                labelStyle: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
+                border: const OutlineInputBorder(),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(
+                      color: isDarkMode ? Colors.grey : Colors.black45),
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            TextField(
+              controller: phoneController,
+              style: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
+              decoration: InputDecoration(
+                labelText: 'Teléfono',
+                labelStyle: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
+                border: const OutlineInputBorder(),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(
+                      color: isDarkMode ? Colors.grey : Colors.black45),
+                ),
+              ),
+              keyboardType: TextInputType.phone,
             ),
           ],
-        );
-      },
-    );
-  }
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'Cancelar',
+              style: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              final name = nameController.text.trim();
+              final email = emailController.text.trim();
+              final phone = phoneController.text.trim();
+
+              if (name.isNotEmpty && email.isNotEmpty && phone.isNotEmpty) {
+                if (isEditing && index != null) {
+                  _editContact(index, name, email, phone);
+                } else {
+                  _addContact(name, email, phone);
+                }
+                Navigator.pop(context);
+              }
+            },
+            child: Text(
+              'Guardar',
+              style: TextStyle(color: isDarkMode ? Colors.blue : Colors.blue),
+            ),
+          ),
+        ],
+      );
+    },
+  );
+}
 }

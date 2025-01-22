@@ -197,48 +197,6 @@ Widget build(BuildContext context) {
           ),
           const SizedBox(height: 16),
 
-          // Campos para añadir entrega
-          TextField(
-            controller: _titleController,
-            decoration: const InputDecoration(labelText: 'Título de Entrega'),
-          ),
-          const SizedBox(height: 8),
-          TextField(
-            controller: _assigneeController,
-            decoration: const InputDecoration(labelText: 'Encargado'),
-          ),
-          const SizedBox(height: 8),
-          DropdownButtonFormField<String>(
-            value: _selectedStatus,
-            items: ['Pendiente', 'Completada'].map((status) {
-              return DropdownMenuItem(
-                value: status,
-                child: Text(status),
-              );
-            }).toList(),
-            onChanged: (value) {
-              setState(() {
-                _selectedStatus = value!;
-              });
-            },
-            decoration: const InputDecoration(labelText: 'Estado'),
-          ),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: _addDelivery,
-            style: ButtonStyle(
-              backgroundColor: MaterialStateProperty.all(
-                const Color.fromARGB(255, 76, 78, 175),
-              ),
-              foregroundColor: MaterialStateProperty.all(Colors.white),
-              padding: MaterialStateProperty.all(
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              ),
-            ),
-            child: const Text('Añadir Entrega'),
-          ),
-          const SizedBox(height: 16),
-
           // Lista de entregas con filtro de búsqueda
           Expanded(
             child: ListView.builder(
@@ -311,6 +269,117 @@ Widget build(BuildContext context) {
         ],
       ),
     ),
+    floatingActionButton: FloatingActionButton.extended(
+      onPressed: () => _showAddDeliveryDialog(),
+      label: const Text('Añadir Entrega'),
+      icon: const Icon(Icons.add),
+      backgroundColor: const Color.fromARGB(255, 76, 78, 175),
+    ),
+    floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+  );
+}
+
+void _showAddDeliveryDialog() {
+  final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+  showDialog(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        backgroundColor: isDarkMode
+            ? const Color.fromARGB(255, 40, 40, 40)
+            : Colors.white,
+        title: Text(
+          'Añadir Entrega',
+          style: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: _titleController,
+                style: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
+                decoration: InputDecoration(
+                  labelText: 'Título de Entrega',
+                  labelStyle: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
+                  border: const OutlineInputBorder(),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(
+                      color: isDarkMode ? Colors.grey : Colors.black45,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: _assigneeController,
+                style: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
+                decoration: InputDecoration(
+                  labelText: 'Encargado',
+                  labelStyle: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
+                  border: const OutlineInputBorder(),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(
+                      color: isDarkMode ? Colors.grey : Colors.black45,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              DropdownButtonFormField<String>(
+                value: _selectedStatus,
+                items: ['Pendiente', 'Completada'].map((status) {
+                  return DropdownMenuItem(
+                    value: status,
+                    child: Text(
+                      status,
+                      style: TextStyle(
+                        color: isDarkMode ? Colors.white : Colors.black,
+                      ),
+                    ),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    _selectedStatus = value!;
+                  });
+                },
+                decoration: InputDecoration(
+                  labelText: 'Estado',
+                  labelStyle: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
+                  border: const OutlineInputBorder(),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(
+                      color: isDarkMode ? Colors.grey : Colors.black45,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'Cancelar',
+              style: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              _addDelivery();
+              Navigator.pop(context);
+            },
+            child: const Text(
+              'Guardar',
+              style: TextStyle(color: Colors.blue),
+            ),
+          ),
+        ],
+      );
+    },
   );
 }
 }
