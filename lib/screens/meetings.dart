@@ -67,36 +67,41 @@ void _filterMeetings(String query) {
 }
 
 
-  void _addMeeting() {
-    if (_titleController.text.isEmpty ||
-        (_meetingType == 'presencial' && _locationController.text.isEmpty)) {
-
-      return;
-    }
-
-    setState(() {
-      meetings.add({
-        'title': _titleController.text,
-        'date': _selectedDate.toIso8601String(),
-        'time': _selectedTime.format(context),
-        'type': _meetingType,
-        'location': _meetingType == 'presencial' ? _locationController.text : null,
-      });
-    });
-
-    _titleController.clear();
-    _locationController.clear();
-    _saveMeetings();
-    Navigator.pop(context);
+void _addMeeting() {
+  if (_titleController.text.isEmpty ||
+      (_meetingType == 'presencial' && _locationController.text.isEmpty)) {
+    return;
   }
 
+  setState(() {
+    final newMeeting = {
+      'title': _titleController.text,
+      'date': _selectedDate.toIso8601String(),
+      'time': _selectedTime.format(context),
+      'type': _meetingType,
+      'location': _meetingType == 'presencial' ? _locationController.text : null,
+      'url': _meetingType == 'remoto' ? _urlController.text : null,
+    };
+
+    meetings.add(newMeeting);
+    _filterMeetings(''); // Actualiza la lista filtrada para mostrar la nueva reunión
+  });
+
+  _titleController.clear();
+  _locationController.clear();
+  _urlController.clear();
+  _saveMeetings();
+  Navigator.pop(context);
+}
 
 void _deleteMeeting(int index) {
   setState(() {
     meetings.removeAt(index);
+    _filterMeetings(''); // Actualiza la lista filtrada
   });
   _saveMeetings();
 }
+
 
 void _editMeeting(int index) {
   final meeting = meetings[index];
@@ -108,6 +113,7 @@ void _editMeeting(int index) {
   );
   _meetingType = meeting['type'] ?? 'remoto';
   _locationController.text = meeting['location'] ?? '';
+  _urlController.text = meeting['url'] ?? '';
 
   showDialog(
     context: context,
@@ -143,75 +149,121 @@ void _editMeeting(int index) {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  GestureDetector(
-                    onTap: () async {
-                      final DateTime? pickedDate = await showDatePicker(
-                        context: context,
-                        initialDate: _selectedDate,
-                        firstDate: DateTime(2000),
-                        lastDate: DateTime(2101),
-                      );
-                      if (pickedDate != null) {
-                        setDialogState(() {
-                          _selectedDate = pickedDate;
-                        });
-                      }
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                            color: isDarkMode ? Colors.grey : Colors.black45),
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Fecha: ${_selectedDate.toLocal().toString().split(' ')[0]}',
-                            style:
-                                TextStyle(color: isDarkMode ? Colors.white : Colors.black),
+                  //AJUSTE CUADRO DE DIALOGO DE EDITAR REUNION
+                    GestureDetector(
+                      onTap: () async {
+                        final DateTime? pickedDate = await showDatePicker(
+                          context: context,
+                          initialDate: _selectedDate,
+                          firstDate: DateTime(2000),
+                          lastDate: DateTime(2101),
+                          builder: (BuildContext context, Widget? child) {
+                            return Theme(
+                              data: ThemeData(
+                                colorScheme: Theme.of(context).brightness == Brightness.dark
+                                    ? ColorScheme.dark(
+                                        primary: Colors.blue, // Color del botón principal
+                                        surface: Colors.grey[900]!, // Fondo sólido oscuro
+                                        onSurface: Colors.white, // Color del texto
+                                      )
+                                    : ColorScheme.light(
+                                        primary: Colors.blue, // Color del botón principal
+                                        surface: Colors.white, // Fondo sólido claro
+                                        onSurface: Colors.black, // Color del texto
+                                      ),
+                              ),
+                              child: child!,
+                            );
+                          },
+                        );
+                        if (pickedDate != null) {
+                          setDialogState(() {
+                            _selectedDate = pickedDate;
+                          });
+                        }
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: isDarkMode ? Colors.grey : Colors.black45,
                           ),
-                          Icon(Icons.calendar_today,
-                              color: isDarkMode ? Colors.white : Colors.black),
-                        ],
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Fecha: ${DateFormat('dd/MM/yyyy').format(_selectedDate)}',
+                              style: TextStyle(
+                                color: isDarkMode ? Colors.white : Colors.black,
+                              ),
+                            ),
+                            Icon(
+                              Icons.calendar_today,
+                              color: isDarkMode ? Colors.white : Colors.black,
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  GestureDetector(
-                    onTap: () async {
-                      final TimeOfDay? pickedTime = await showTimePicker(
-                        context: context,
-                        initialTime: _selectedTime,
-                      );
-                      if (pickedTime != null) {
-                        setDialogState(() {
-                          _selectedTime = pickedTime;
-                        });
-                      }
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                            color: isDarkMode ? Colors.grey : const Color.fromARGB(115, 94, 71, 71)),
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Hora: ${_selectedTime.format(context)}',
-                            style:
-                                TextStyle(color: isDarkMode ? Colors.white : Colors.black),
+                    const SizedBox(height: 8),
+                    GestureDetector(
+                      onTap: () async {
+                        final TimeOfDay? pickedTime = await showTimePicker(
+                          context: context,
+                          initialTime: _selectedTime,
+                          builder: (BuildContext context, Widget? child) {
+                            return Theme(
+                              data: ThemeData(
+                                colorScheme: Theme.of(context).brightness == Brightness.dark
+                                    ? ColorScheme.dark(
+                                        primary: Colors.blue, // Color del botón principal
+                                        surface: Colors.grey[900]!, // Fondo sólido oscuro
+                                        onSurface: Colors.white, // Color del texto
+                                      )
+                                    : ColorScheme.light(
+                                        primary: Colors.blue, // Color del botón principal
+                                        surface: Colors.white, // Fondo sólido claro
+                                        onSurface: Colors.black, // Color del texto
+                                      ),
+                              ),
+                              child: child!,
+                            );
+                          },
+                        );
+                        if (pickedTime != null) {
+                          setDialogState(() {
+                            _selectedTime = pickedTime;
+                          });
+                        }
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: isDarkMode ? Colors.grey : Colors.black45,
                           ),
-                          Icon(Icons.access_time,
-                              color: isDarkMode ? Colors.white : Colors.black),
-                        ],
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Hora: ${_selectedTime.format(context)}',
+                              style: TextStyle(
+                                color: isDarkMode ? Colors.white : Colors.black,
+                              ),
+                            ),
+                            Icon(
+                              Icons.access_time,
+                              color: isDarkMode ? Colors.white : Colors.black,
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
+// FIN DE CUADRO DE DIALOGO DE EDITAR REUNION
                   const SizedBox(height: 8),
                   DropdownButtonFormField<String>(
                     value: _meetingType,
@@ -242,14 +294,28 @@ void _editMeeting(int index) {
                       ),
                     ),
                   ),
-                  if (_meetingType == 'presencial')
-                    const SizedBox(height: 8),
+                  const SizedBox(height: 8),
                   if (_meetingType == 'presencial')
                     TextField(
                       controller: _locationController,
                       style: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
                       decoration: InputDecoration(
                         labelText: 'Ubicación',
+                        labelStyle:
+                            TextStyle(color: isDarkMode ? Colors.white : Colors.black),
+                        border: const OutlineInputBorder(),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                              color: isDarkMode ? Colors.grey : Colors.black45),
+                        ),
+                      ),
+                    ),
+                  if (_meetingType == 'remoto')
+                    TextField(
+                      controller: _urlController,
+                      style: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
+                      decoration: InputDecoration(
+                        labelText: 'URL/Link de la reunión',
                         labelStyle:
                             TextStyle(color: isDarkMode ? Colors.white : Colors.black),
                         border: const OutlineInputBorder(),
@@ -279,7 +345,11 @@ void _editMeeting(int index) {
                       'location': _meetingType == 'presencial'
                           ? _locationController.text
                           : null,
+                      'url': _meetingType == 'remoto'
+                          ? _urlController.text
+                          : null,
                     };
+                    filteredMeetings = List.from(meetings); // Actualizar la lista filtrada
                   });
                   _saveMeetings();
                   Navigator.pop(context);
@@ -294,6 +364,7 @@ void _editMeeting(int index) {
     },
   );
 }
+
 
 void _showAddMeetingDialog({int? index}) {
   // Si es edición, inicializa los valores del formulario
@@ -351,138 +422,138 @@ showDialog(
                   ),
                 ),
                 const SizedBox(height: 8),
-GestureDetector(
-  onTap: () async {
-    final DateTime? pickedDate = await showDatePicker(
-      context: context,
-      initialDate: _selectedDate,
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2101),
-      builder: (BuildContext context, Widget? child) {
-        return Theme(
-          data: ThemeData(
-            colorScheme: Theme.of(context).brightness == Brightness.dark
-                ? ColorScheme.dark(
-                    primary: Colors.blue, // Color principal para el botón
-                    surface: Colors.grey[900]!, // Fondo del cuadro
-                    onSurface: Colors.white, // Color del texto
-                  )
-                : ColorScheme.light(
-                    primary: Colors.blue, // Color principal para el botón
-                    surface: Colors.white, // Fondo del cuadro
-                    onSurface: Colors.black, // Color del texto
+
+                //Cuadro de dialogo Fecha
+                  GestureDetector(
+                    onTap: () async {
+                      final DateTime? pickedDate = await showDatePicker(
+                        context: context,
+                        initialDate: _selectedDate,
+                        firstDate: DateTime(2000),
+                        lastDate: DateTime(2101),
+                        builder: (BuildContext context, Widget? child) {
+                          return Theme(
+                            data: ThemeData(
+                              colorScheme: Theme.of(context).brightness == Brightness.dark
+                                  ? ColorScheme.dark(
+                                      primary: Colors.blue,
+                                      surface: Colors.grey[900]!,
+                                      onSurface: Colors.white,
+                                    )
+                                  : ColorScheme.light(
+                                      primary: Colors.blue,
+                                      surface: Colors.white,
+                                      onSurface: Colors.black,
+                                    ),
+                            ),
+                            child: child!,
+                          );
+                        },
+                      );
+
+                      if (pickedDate != null) {
+                        setDialogState(() {
+                          _selectedDate = pickedDate;
+                        });
+                      }
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? Colors.grey
+                              : Colors.black45,
+                        ),
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Fecha: ${DateFormat('dd/MM/yyyy').format(_selectedDate)}',
+                            style: TextStyle(
+                              color: Theme.of(context).brightness == Brightness.dark
+                                  ? Colors.white
+                                  : Colors.black,
+                            ),
+                          ),
+                          Icon(
+                            Icons.calendar_today,
+                            color: Theme.of(context).brightness == Brightness.dark
+                                ? Colors.white
+                                : Colors.black,
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-          ),
-          child: child!,
-        );
-      },
-    );
-
-    if (pickedDate != null) {
-      setState(() {
-        _selectedDate = pickedDate;
-      });
-    }
-  },
-  child: Container(
-    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-    decoration: BoxDecoration(
-      border: Border.all(
-        color: Theme.of(context).brightness == Brightness.dark
-            ? Colors.grey
-            : Colors.black45,
-      ),
-      borderRadius: BorderRadius.circular(5),
-    ),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          'Fecha: ${_selectedDate.toLocal()}'.split(' ')[0],
-          style: TextStyle(
-            color: Theme.of(context).brightness == Brightness.dark
-                ? Colors.white
-                : Colors.black,
-          ),
-        ),
-        Icon(
-          Icons.calendar_today,
-          color: Theme.of(context).brightness == Brightness.dark
-              ? Colors.white
-              : Colors.black,
-        ),
-      ],
-    ),
-  ),
-),
-
 
                 const SizedBox(height: 8),
-GestureDetector(
-  onTap: () async {
-    final TimeOfDay? pickedTime = await showTimePicker(
-      context: context,
-      initialTime: _selectedTime,
-      builder: (BuildContext context, Widget? child) {
-        return Theme(
-          data: ThemeData(
-            colorScheme: Theme.of(context).brightness == Brightness.dark
-                ? ColorScheme.dark(
-                    primary: Colors.blue, // Color principal para el botón
-                    surface: Colors.grey[900]!, // Fondo del cuadro
-                    onSurface: Colors.white, // Color del texto
-                  )
-                : ColorScheme.light(
-                    primary: Colors.blue, // Color principal para el botón
-                    surface: Colors.white, // Fondo del cuadro
-                    onSurface: Colors.black, // Color del texto
+
+                //Cuadro de dialogo tiempo (hora)
+                  GestureDetector(
+                    onTap: () async {
+                      final TimeOfDay? pickedTime = await showTimePicker(
+                        context: context,
+                        initialTime: _selectedTime,
+                        builder: (BuildContext context, Widget? child) {
+                          return Theme(
+                            data: ThemeData(
+                              colorScheme: Theme.of(context).brightness == Brightness.dark
+                                  ? ColorScheme.dark(
+                                      primary: Colors.blue,
+                                      surface: Colors.grey[900]!,
+                                      onSurface: Colors.white,
+                                    )
+                                  : ColorScheme.light(
+                                      primary: Colors.blue,
+                                      surface: Colors.white,
+                                      onSurface: Colors.black,
+                                    ),
+                            ),
+                            child: child!,
+                          );
+                        },
+                      );
+
+                      if (pickedTime != null) {
+                        setDialogState(() {
+                          _selectedTime = pickedTime;
+                        });
+                      }
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? Colors.grey
+                              : Colors.black45,
+                        ),
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Hora: ${_selectedTime.format(context)}',
+                            style: TextStyle(
+                              color: Theme.of(context).brightness == Brightness.dark
+                                  ? Colors.white
+                                  : Colors.black,
+                            ),
+                          ),
+                          Icon(
+                            Icons.access_time,
+                            color: Theme.of(context).brightness == Brightness.dark
+                                ? Colors.white
+                                : Colors.black,
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-          ),
-          child: child!,
-        );
-      },
-    );
-
-    if (pickedTime != null) {
-      setState(() {
-        _selectedTime = pickedTime;
-      });
-    }
-  },
-  child: Container(
-    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-    decoration: BoxDecoration(
-      border: Border.all(
-        color: Theme.of(context).brightness == Brightness.dark
-            ? Colors.grey
-            : Colors.black45,
-      ),
-      borderRadius: BorderRadius.circular(5),
-    ),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          'Hora: ${_selectedTime.format(context)}',
-          style: TextStyle(
-            color: Theme.of(context).brightness == Brightness.dark
-                ? Colors.white
-                : Colors.black,
-          ),
-        ),
-        Icon(
-          Icons.access_time,
-          color: Theme.of(context).brightness == Brightness.dark
-              ? Colors.white
-              : Colors.black,
-        ),
-      ],
-    ),
-  ),
-),
-
-
-
                 const SizedBox(height: 8),
                 DropdownButtonFormField<String>(
                   value: _meetingType,
@@ -651,6 +722,10 @@ Expanded(
               Text('Tipo: ${meeting['type']}'),
               if (meeting['type'] == 'presencial')
                 Text('Ubicación: ${meeting['location'] ?? 'N/A'}'),
+              
+              if (meeting['type'] == 'remoto')
+                Text('Url/Link: ${meeting['url'] ?? 'N/A'}'),
+              
             ],
           ),
           trailing: Row(
