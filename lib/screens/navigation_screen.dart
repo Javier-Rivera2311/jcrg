@@ -84,17 +84,17 @@ class _NavigationScreenState extends State<NavigationScreen> {
                 title: const Text('Reuniones'),
                 body: MeetingsScreen(), // Submenú para entregas
               ),
+              PaneItem(
+                icon: const Icon(FluentIcons.print),
+                title: const Text('Impresiones'),
+                body: ImpressionsScreen(),
+              ),
             ],
           ),
           PaneItem(
             icon: const Icon(FluentIcons.contact_list),
             title: const Text('Contactos'),
             body: ContactManagerScreen(),
-          ),
-          PaneItem(
-            icon: const Icon(FluentIcons.print),
-            title: const Text('Impresiones'),
-            body: ImpressionsScreen(),
           ),
         ],
       ),

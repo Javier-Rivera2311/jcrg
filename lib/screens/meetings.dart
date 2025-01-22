@@ -14,8 +14,10 @@ class MeetingsScreen extends StatefulWidget {
 class _MeetingsScreenState extends State<MeetingsScreen> {
   final String filePath = r'\\desktop-co5hnd9\SERVIDOR B\Informatica\flutter\reuniones\meetings.json';
   List<dynamic> meetings = [];
+  List<dynamic> filteredMeetings = [];
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _locationController = TextEditingController();
+  final TextEditingController _urlController = TextEditingController();
   DateTime _selectedDate = DateTime.now();
   TimeOfDay _selectedTime = TimeOfDay.now();
   String _meetingType = "remoto";
@@ -26,19 +28,21 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
     _loadMeetings();
   }
 
-  Future<void> _loadMeetings() async {
-    try {
-      final file = File(filePath);
-      if (await file.exists()) {
-        final content = await file.readAsString();
-        setState(() {
-          meetings = json.decode(content);
-        });
-      }
-    } catch (e) {
-      print('Error al leer el archivo: $e');
+Future<void> _loadMeetings() async {
+  try {
+    final file = File(filePath);
+    if (await file.exists()) {
+      final content = await file.readAsString();
+      setState(() {
+        meetings = json.decode(content);
+        filteredMeetings = List.from(meetings); // Copia la lista original
+      });
     }
+  } catch (e) {
+    print('Error al leer el archivo: $e');
   }
+}
+
 
   Future<void> _saveMeetings() async {
     try {
@@ -50,12 +54,23 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
     }
   }
 
+void _filterMeetings(String query) {
+  setState(() {
+    if (query.isEmpty) {
+      filteredMeetings = List.from(meetings); // Restaura la lista original
+    } else {
+      filteredMeetings = meetings.where((meeting) {
+        return (meeting['title'] as String).toLowerCase().contains(query.toLowerCase());
+      }).toList();
+    }
+  });
+}
+
+
   void _addMeeting() {
     if (_titleController.text.isEmpty ||
         (_meetingType == 'presencial' && _locationController.text.isEmpty)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Por favor, completa todos los campos obligatorios')),
-      );
+
       return;
     }
 
@@ -180,7 +195,7 @@ void _editMeeting(int index) {
                       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                       decoration: BoxDecoration(
                         border: Border.all(
-                            color: isDarkMode ? Colors.grey : Colors.black45),
+                            color: isDarkMode ? Colors.grey : const Color.fromARGB(115, 94, 71, 71)),
                         borderRadius: BorderRadius.circular(5),
                       ),
                       child: Row(
@@ -301,133 +316,210 @@ void _showAddMeetingDialog({int? index}) {
     _meetingType = "remoto";
   }
 
-  showDialog(
-    context: context,
-    builder: (context) {
-      return StatefulBuilder(
-        builder: (context, setDialogState) {
-          final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+showDialog(
+  context: context,
+  builder: (context) {
+    return StatefulBuilder(
+      builder: (context, setDialogState) {
+        final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
-          return AlertDialog(
-          backgroundColor: Theme.of(context).brightness == Brightness.dark
-              ? const Color.fromARGB(255, 40, 40, 40) // Fondo oscuro
-              : Colors.white, // Fondo claro
+        return AlertDialog(
+          backgroundColor: isDarkMode
+              ? const Color.fromARGB(255, 40, 40, 40)
+              : Colors.white,
           title: Text(
             index == null ? 'Agregar Reunión' : 'Editar Reunión',
             style: TextStyle(
-              color: Theme.of(context).brightness == Brightness.dark
-                  ? Colors.white
-                  : Colors.black, // Color del texto según el tema
+              color: isDarkMode ? Colors.white : Colors.black,
             ),
           ),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                TextField(
+                  controller: _titleController,
+                  style: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
+                  decoration: InputDecoration(
+                    labelText: 'Título de la reunión',
+                    labelStyle: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
+                    border: const OutlineInputBorder(),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                          color: isDarkMode ? Colors.grey : Colors.black45),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+GestureDetector(
+  onTap: () async {
+    final DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+      builder: (BuildContext context, Widget? child) {
+        return Theme(
+          data: ThemeData(
+            colorScheme: Theme.of(context).brightness == Brightness.dark
+                ? ColorScheme.dark(
+                    primary: Colors.blue, // Color principal para el botón
+                    surface: Colors.grey[900]!, // Fondo del cuadro
+                    onSurface: Colors.white, // Color del texto
+                  )
+                : ColorScheme.light(
+                    primary: Colors.blue, // Color principal para el botón
+                    surface: Colors.white, // Fondo del cuadro
+                    onSurface: Colors.black, // Color del texto
+                  ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (pickedDate != null) {
+      setState(() {
+        _selectedDate = pickedDate;
+      });
+    }
+  },
+  child: Container(
+    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+    decoration: BoxDecoration(
+      border: Border.all(
+        color: Theme.of(context).brightness == Brightness.dark
+            ? Colors.grey
+            : Colors.black45,
+      ),
+      borderRadius: BorderRadius.circular(5),
+    ),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          'Fecha: ${_selectedDate.toLocal()}'.split(' ')[0],
+          style: TextStyle(
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.white
+                : Colors.black,
+          ),
+        ),
+        Icon(
+          Icons.calendar_today,
+          color: Theme.of(context).brightness == Brightness.dark
+              ? Colors.white
+              : Colors.black,
+        ),
+      ],
+    ),
+  ),
+),
+
+
+                const SizedBox(height: 8),
+GestureDetector(
+  onTap: () async {
+    final TimeOfDay? pickedTime = await showTimePicker(
+      context: context,
+      initialTime: _selectedTime,
+      builder: (BuildContext context, Widget? child) {
+        return Theme(
+          data: ThemeData(
+            colorScheme: Theme.of(context).brightness == Brightness.dark
+                ? ColorScheme.dark(
+                    primary: Colors.blue, // Color principal para el botón
+                    surface: Colors.grey[900]!, // Fondo del cuadro
+                    onSurface: Colors.white, // Color del texto
+                  )
+                : ColorScheme.light(
+                    primary: Colors.blue, // Color principal para el botón
+                    surface: Colors.white, // Fondo del cuadro
+                    onSurface: Colors.black, // Color del texto
+                  ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (pickedTime != null) {
+      setState(() {
+        _selectedTime = pickedTime;
+      });
+    }
+  },
+  child: Container(
+    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+    decoration: BoxDecoration(
+      border: Border.all(
+        color: Theme.of(context).brightness == Brightness.dark
+            ? Colors.grey
+            : Colors.black45,
+      ),
+      borderRadius: BorderRadius.circular(5),
+    ),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          'Hora: ${_selectedTime.format(context)}',
+          style: TextStyle(
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.white
+                : Colors.black,
+          ),
+        ),
+        Icon(
+          Icons.access_time,
+          color: Theme.of(context).brightness == Brightness.dark
+              ? Colors.white
+              : Colors.black,
+        ),
+      ],
+    ),
+  ),
+),
+
+
+
+                const SizedBox(height: 8),
+                DropdownButtonFormField<String>(
+                  value: _meetingType,
+                  dropdownColor: isDarkMode
+                      ? const Color.fromARGB(255, 50, 50, 50)
+                      : Colors.white,
+                  items: ['remoto', 'presencial'].map((type) {
+                    return DropdownMenuItem(
+                      value: type,
+                      child: Text(type,
+                          style: TextStyle(
+                              color: isDarkMode ? Colors.white : Colors.black)),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    setDialogState(() {
+                      _meetingType = value!;
+                    });
+                  },
+                  decoration: InputDecoration(
+                    labelText: 'Tipo de reunión',
+                    labelStyle:
+                        TextStyle(color: isDarkMode ? Colors.white : Colors.black),
+                    border: const OutlineInputBorder(),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                          color: isDarkMode ? Colors.grey : Colors.black45),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                if (_meetingType == 'presencial')
                   TextField(
-                    controller: _titleController,
+                    controller: _locationController,
                     style: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
                     decoration: InputDecoration(
-                      labelText: 'Título de la reunión',
-                      labelStyle: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
-                      border: const OutlineInputBorder(),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                            color: isDarkMode ? Colors.grey : Colors.black45),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  GestureDetector(
-                    onTap: () async {
-                      final DateTime? pickedDate = await showDatePicker(
-                        context: context,
-                        initialDate: _selectedDate,
-                        firstDate: DateTime(2000),
-                        lastDate: DateTime(2101),
-                      );
-                      if (pickedDate != null) {
-                        setDialogState(() {
-                          _selectedDate = pickedDate;
-                        });
-                      }
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                            color: isDarkMode ? Colors.grey : Colors.black45),
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Fecha: ${DateFormat('dd/MM/yyyy').format(_selectedDate)}',
-                            style:
-                                TextStyle(color: isDarkMode ? Colors.white : Colors.black),
-                          ),
-                          Icon(Icons.calendar_today,
-                              color: isDarkMode ? Colors.white : Colors.black),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  GestureDetector(
-                    onTap: () async {
-                      final TimeOfDay? pickedTime = await showTimePicker(
-                        context: context,
-                        initialTime: _selectedTime,
-                      );
-                      if (pickedTime != null) {
-                        setDialogState(() {
-                          _selectedTime = pickedTime;
-                        });
-                      }
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                            color: isDarkMode ? Colors.grey : Colors.black45),
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Hora: ${_selectedTime.format(context)}',
-                            style:
-                                TextStyle(color: isDarkMode ? Colors.white : Colors.black),
-                          ),
-                          Icon(Icons.access_time,
-                              color: isDarkMode ? Colors.white : Colors.black),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  DropdownButtonFormField<String>(
-                    value: _meetingType,
-                    dropdownColor: isDarkMode
-                        ? const Color.fromARGB(255, 50, 50, 50)
-                        : Colors.white,
-                    items: ['remoto', 'presencial'].map((type) {
-                      return DropdownMenuItem(
-                        value: type,
-                        child: Text(type,
-                            style: TextStyle(
-                                color: isDarkMode ? Colors.white : Colors.black)),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      setDialogState(() {
-                        _meetingType = value!;
-                      });
-                    },
-                    decoration: InputDecoration(
-                      labelText: 'Tipo de reunión',
+                      labelText: 'Ubicación',
                       labelStyle:
                           TextStyle(color: isDarkMode ? Colors.white : Colors.black),
                       border: const OutlineInputBorder(),
@@ -437,70 +529,72 @@ void _showAddMeetingDialog({int? index}) {
                       ),
                     ),
                   ),
-                  if (_meetingType == 'presencial')
-                    const SizedBox(height: 8),
-                  if (_meetingType == 'presencial')
-                    TextField(
-                      controller: _locationController,
-                      style: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
-                      decoration: InputDecoration(
-                        labelText: 'Ubicación',
-                        labelStyle:
-                            TextStyle(color: isDarkMode ? Colors.white : Colors.black),
-                        border: const OutlineInputBorder(),
-                        enabledBorder: OutlineInputBorder(
-                          borderSide: BorderSide(
-                              color: isDarkMode ? Colors.grey : Colors.black45),
-                        ),
+                if (_meetingType == 'remoto')
+                  TextField(
+                    controller: _urlController,
+                    style: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
+                    decoration: InputDecoration(
+                      labelText: 'URL/Link de la reunión',
+                      labelStyle:
+                          TextStyle(color: isDarkMode ? Colors.white : Colors.black),
+                      border: const OutlineInputBorder(),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                            color: isDarkMode ? Colors.grey : Colors.black45),
                       ),
                     ),
-                ],
+                  ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('Cancelar',
+                  style: TextStyle(color: isDarkMode ? Colors.white : Colors.black)),
+            ),
+            TextButton(
+              onPressed: () {
+                if (index == null) {
+                  _addMeeting(); // Agregar nueva reunión
+                } else {
+                  setState(() {
+                    meetings[index] = {
+                      'title': _titleController.text,
+                      'date': _selectedDate.toIso8601String(),
+                      'time': _selectedTime.format(context),
+                      'type': _meetingType,
+                      'location': _meetingType == 'presencial'
+                          ? _locationController.text
+                          : null,
+                      'url': _meetingType == 'remoto'
+                          ? _urlController.text
+                          : null,
+                    };
+                  });
+                  _saveMeetings(); // Guardar cambios
+                  Navigator.pop(context);
+                }
+              },
+              child: Text(
+                index == null ? 'Guardar' : 'Actualizar',
+                style: TextStyle(color: isDarkMode ? Colors.blue : Colors.blue),
               ),
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text('Cancelar',
-                    style: TextStyle(color: isDarkMode ? Colors.white : Colors.black)),
-              ),
-              TextButton(
-                onPressed: () {
-                  if (index == null) {
-                    _addMeeting(); // Agregar nueva reunión
-                  } else {
-                    setState(() {
-                      meetings[index] = {
-                        'title': _titleController.text,
-                        'date': _selectedDate.toIso8601String(),
-                        'time': _selectedTime.format(context),
-                        'type': _meetingType,
-                        'location': _meetingType == 'presencial'
-                            ? _locationController.text
-                            : null,
-                      };
-                    });
-                    _saveMeetings(); // Guardar cambios
-                    Navigator.pop(context);
-                  }
-                },
-                child: Text(
-                  index == null ? 'Guardar' : 'Actualizar',
-                  style: TextStyle(color: isDarkMode ? Colors.blue : Colors.blue),
-                ),
-              ),
-            ],
-          );
-        },
-      );
-    },
-  );
+          ],
+        );
+      },
+    );
+  },
+);
+
 }
 
 @override
 Widget build(BuildContext context) {
   return Scaffold(
     appBar: AppBar(
-      title: const Text('Gestión de Reuniones', style: TextStyle(color: Colors.white)),
+      title: const Text('Lista de Reuniones', style: TextStyle(color: Colors.white)),
       backgroundColor: const Color.fromARGB(255, 107, 135, 182),
       leading: Center(
         child: Image.asset(
@@ -519,91 +613,70 @@ Widget build(BuildContext context) {
         ),
       ],
     ),
-    body: Padding(
-      padding: const EdgeInsets.only(top: 16.0, left: 16.0, right: 16.0),
-      child: Container(
-        width: double.infinity,
-        constraints: const BoxConstraints(maxWidth: 800),
-        child: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: DataTable(
-            columns: const [
-              DataColumn(
-                label: Text(
-                  'Título',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
+body: Padding(
+  padding: const EdgeInsets.all(16.0),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      const SizedBox(height: 16), // Espacio entre el título y la barra de búsqueda
+TextField(
+  onChanged: _filterMeetings,
+  decoration: InputDecoration(
+    prefixIcon: const Icon(Icons.search),
+    hintText: 'Buscar reunión',
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(8),
+      borderSide: const BorderSide(color: Colors.grey),
+    ),
+  ),
+),
+
+      const SizedBox(height: 16), // Espacio entre la barra de búsqueda y la lista
+Expanded(
+  child: ListView(
+    children: filteredMeetings.map((meeting) {
+      return Card(
+        margin: const EdgeInsets.symmetric(vertical: 8),
+        child: ListTile(
+          title: Text(
+            meeting['title'] ?? 'Sin título',
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Fecha: ${DateFormat('dd/MM/yyyy').format(DateTime.parse(meeting['date']).toLocal())}'),
+              Text('Hora: ${meeting['time']}'),
+              Text('Tipo: ${meeting['type']}'),
+              if (meeting['type'] == 'presencial')
+                Text('Ubicación: ${meeting['location'] ?? 'N/A'}'),
+            ],
+          ),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.edit, color: Colors.blue),
+                onPressed: () => _editMeeting(filteredMeetings.indexOf(meeting)),
               ),
-              DataColumn(
-                label: Text(
-                  'Fecha',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ),
-              DataColumn(
-                label: Text(
-                  'Hora',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ),
-              DataColumn(
-                label: Text(
-                  'Tipo',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ),
-              DataColumn(
-                label: Text(
-                  'Ubicación',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ),
-              DataColumn(
-                label: Text(
-                  'Acciones',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
+              IconButton(
+                icon: const Icon(Icons.delete, color: Colors.red),
+                onPressed: () => _deleteMeeting(meetings.indexOf(meeting)),
               ),
             ],
-            rows: meetings.asMap().entries.map((entry) {
-              final index = entry.key;
-              final meeting = entry.value;
-              return DataRow(
-                cells: [
-                  DataCell(Text(meeting['title'] ?? '')),
-                  DataCell(Text(DateFormat('dd/MM/yyyy').format(DateTime.parse(meeting['date']).toLocal()))),
-                  DataCell(Text(meeting['time'] ?? '')),
-                  DataCell(Text(meeting['type'] ?? '')),
-                  DataCell(Text(meeting['type'] == 'presencial'
-                      ? (meeting['location'] ?? '')
-                      : 'N/A')),
-                  DataCell(Row(
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.edit, color: Colors.blue),
-                        onPressed: () => _editMeeting(index),
-                        tooltip: 'Editar Reunión',
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.delete, color: Colors.red),
-                        onPressed: () => _deleteMeeting(index),
-                        tooltip: 'Borrar Reunión',
-                      ),
-                    ],
-                  )),
-                ],
-              );
-            }).toList(),
           ),
         ),
-      ),
-    ),
+      );
+    }).toList(),
+  ),
+),
+
+    ],
+  ),
+),
+
+
 floatingActionButton: Align(
   alignment: Alignment.bottomCenter,
   child: FloatingActionButton.extended(
