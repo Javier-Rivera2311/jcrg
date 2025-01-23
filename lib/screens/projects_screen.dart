@@ -416,32 +416,29 @@ void _performDeleteFile(FileSystemEntity file) {
                     itemCount: _filteredProjects.length,
                     itemBuilder: (context, index) {
                       final project = _filteredProjects[index];
-                      return Column(
-                        children: [
-                          ListTile(
-                            title: Text(
-                              project['name'] ?? '',
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.blue,
-                              ),
-                            ),
-                            onTap: () {
-                              _listFiles(project['path'] ?? '');
-                              setState(() {
-                                _selectedProjectPath = project['path'];
-                              });
-                            },
-                            trailing: IconButton(
-                              icon: const Icon(Icons.delete, color: Color.fromARGB(255, 255, 17, 0),),
-                              onPressed: () => _deleteProject(index),
+                      return Card(
+                        margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                        child: ListTile(
+                          leading: const Icon(Icons.folder, color: Colors.blueAccent),
+                          title: Text(
+                            project['name'] ?? '',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: isDarkMode ? Colors.white : Colors.black,
                             ),
                           ),
-                          Divider(
-                            color: isDarkMode ? Colors.white : Colors.black, // Línea horizontal separadora
+                          onTap: () {
+                            _listFiles(project['path'] ?? '');
+                            setState(() {
+                              _selectedProjectPath = project['path'];
+                            });
+                          },
+                          trailing: IconButton(
+                            icon: const Icon(Icons.delete, color: Color.fromARGB(255, 255, 17, 0)),
+                            onPressed: () => _deleteProject(index),
                           ),
-                        ],
+                        ),
                       );
                     },
                   ),
@@ -718,7 +715,11 @@ Expanded(
           ),
           title: Text(
             fileName,
-            style: const TextStyle(fontWeight: FontWeight.bold),
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+              color: isDarkMode ? Colors.white : Colors.black,
+            ),
           ),
           subtitle: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
