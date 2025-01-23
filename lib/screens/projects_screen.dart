@@ -387,163 +387,145 @@ void _performDeleteFile(FileSystemEntity file) {
         ],
       ),
       body: _selectedProjectPath == null
-          ? Row(
+          ? Column(
               children: [
-                Expanded(
-                  flex: 1,
-                  child: Column(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(6.0),
-                        child: TextField(
-                          controller: _searchController,
-                          decoration: const InputDecoration(
-                            labelText: 'Buscar proyectos...',
-                            border: OutlineInputBorder(),
-                          ),
-                          onChanged: (value) => _filterProjects(),
-                        ),
-                      ),
-                      ElevatedButton(
-                        style: ButtonStyle(
-                          backgroundColor: MaterialStateProperty.all(
-                              const Color.fromARGB(255, 76, 78, 175)),
-                          foregroundColor: MaterialStateProperty.all(Colors.white),
-                          padding: MaterialStateProperty.all(
-                            const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                          ),
-                          textStyle: MaterialStateProperty.all(
-                            const TextStyle(fontSize: 16),
-                          ),
-                        ),
-                        onPressed: () {
-                          showDialog(
-                            context: context,
-                            builder: (context) {
-                              return AlertDialog(
-                                backgroundColor: Colors.white, // Color de fondo completamente opaco
-                                title: const Text('Añadir Proyecto'),
-                                content: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    TextField(
-                                      controller: _projectNameController,
-                                      decoration: InputDecoration(
-                                        labelText: 'Nombre del proyecto',
-                                        border: OutlineInputBorder(
-                                          borderSide: const BorderSide(
-                                            color: Colors.grey, // Color del borde
-                                            width: 1.5, // Grosor del borde
-                                          ),
-                                          borderRadius: BorderRadius.circular(10),
-                                        ),
-                                        focusedBorder: OutlineInputBorder(
-                                          borderSide: const BorderSide(
-                                            color: Colors.blue, // Color del borde al enfocar
-                                            width: 2.0,
-                                          ),
-                                          borderRadius: BorderRadius.circular(10),
-                                        ),
-                                      ),
+                Padding(
+                  padding: const EdgeInsets.all(6.0),
+                  child: TextField(
+                    controller: _searchController,
+                    decoration: const InputDecoration(
+                      labelText: 'Buscar proyectos...',
+                      border: OutlineInputBorder(),
+                    ),
+                    onChanged: (value) => _filterProjects(),
+                  ),
+                ),
+                ElevatedButton(
+                  style: ButtonStyle(
+                    backgroundColor: MaterialStateProperty.all(
+                        const Color.fromARGB(255, 76, 78, 175)),
+                    foregroundColor: MaterialStateProperty.all(Colors.white),
+                    padding: MaterialStateProperty.all(
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    ),
+                    textStyle: MaterialStateProperty.all(
+                      const TextStyle(fontSize: 16),
+                    ),
+                  ),
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (context) {
+                        return AlertDialog(
+                          backgroundColor: Colors.white, // Color de fondo completamente opaco
+                          title: const Text('Añadir Proyecto'),
+                          content: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              TextField(
+                                controller: _projectNameController,
+                                decoration: InputDecoration(
+                                  labelText: 'Nombre del proyecto',
+                                  border: OutlineInputBorder(
+                                    borderSide: const BorderSide(
+                                      color: Colors.grey, // Color del borde
+                                      width: 1.5, // Grosor del borde
                                     ),
-                                    const SizedBox(height: 20),
-                                    TextField(
-                                      controller: _projectPathController,
-                                      decoration: InputDecoration(
-                                        labelText: 'Ruta del proyecto',
-                                        border: OutlineInputBorder(
-                                          borderSide: const BorderSide(
-                                            color: Colors.grey,
-                                            width: 1.5,
-                                          ),
-                                          borderRadius: BorderRadius.circular(10),
-                                        ),
-                                        focusedBorder: OutlineInputBorder(
-                                          borderSide: const BorderSide(
-                                            color: Colors.blue,
-                                            width: 2.0,
-                                          ),
-                                          borderRadius: BorderRadius.circular(10),
-                                        ),
-                                        suffixIcon: IconButton(
-                                          icon: const Icon(Icons.folder),
-                                          onPressed: () async {
-                                            final result = await FilePicker.platform.getDirectoryPath();
-                                            if (result != null) {
-                                              setState(() {
-                                                _projectPathController.text = result;
-                                              });
-                                            }
-                                          },
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                actions: [
-                                  TextButton(
-                                    child: const Text('Cancelar'),
-                                    onPressed: () {
-                                      Navigator.pop(context);
-                                      _projectNameController.clear();
-                                      _projectPathController.clear();
-                                    },
+                                    borderRadius: BorderRadius.circular(10),
                                   ),
-                                  TextButton(
-                                    child: const Text('Agregar'),
-                                    onPressed: () {
-                                      final name = _projectNameController.text.trim();
-                                      final path = _projectPathController.text.trim();
-                                      if (name.isNotEmpty && path.isNotEmpty) {
-                                        _addProject(name, path);
-                                        _projectNameController.clear();
-                                        _projectPathController.clear();
-                                        Navigator.pop(context);
-                                      } else {
-                                        _showMessage('Por favor, complete ambos campos.');
+                                  focusedBorder: OutlineInputBorder(
+                                    borderSide: const BorderSide(
+                                      color: Colors.blue, // Color del borde al enfocar
+                                      width: 2.0,
+                                    ),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                              TextField(
+                                controller: _projectPathController,
+                                decoration: InputDecoration(
+                                  labelText: 'Ruta del proyecto',
+                                  border: OutlineInputBorder(
+                                    borderSide: const BorderSide(
+                                      color: Colors.grey,
+                                      width: 1.5,
+                                    ),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderSide: const BorderSide(
+                                      color: Colors.blue,
+                                      width: 2.0,
+                                    ),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  suffixIcon: IconButton(
+                                    icon: const Icon(Icons.folder),
+                                    onPressed: () async {
+                                      final result = await FilePicker.platform.getDirectoryPath();
+                                      if (result != null) {
+                                        setState(() {
+                                          _projectPathController.text = result;
+                                        });
                                       }
                                     },
                                   ),
-                                ],
-                              );
-                            },
-                          );
-                        },
-                        child: const Text('Añadir Proyecto'),
-                      ),
-                      Expanded(
-                        child: ListView.builder(
-                          itemCount: _filteredProjects.length,
-                          itemBuilder: (context, index) {
-                            final project = _filteredProjects[index];
-                            return ListTile(
-                              title: Text(project['name'] ?? ''),
-                              onTap: () {
-                                _listFiles(project['path'] ?? '');
-                                setState(() {
-                                  _selectedProjectPath = project['path'];
-                                });
-                              },
-                              trailing: IconButton(
-                                icon: const Icon(Icons.delete, color: Color.fromARGB(255, 255, 17, 0),),
-                                onPressed: () => _deleteProject(index),
+                                ),
                               ),
-                            );
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  width: 1, // Grosor de la línea
-                  color: Colors.grey[300], // Color de la línea
-                  margin: const EdgeInsets.symmetric(vertical: 8), // Margen vertical
+                            ],
+                          ),
+                          actions: [
+                            TextButton(
+                              child: const Text('Cancelar'),
+                              onPressed: () {
+                                Navigator.pop(context);
+                                _projectNameController.clear();
+                                _projectPathController.clear();
+                              },
+                            ),
+                            TextButton(
+                              child: const Text('Agregar'),
+                              onPressed: () {
+                                final name = _projectNameController.text.trim();
+                                final path = _projectPathController.text.trim();
+                                if (name.isNotEmpty && path.isNotEmpty) {
+                                  _addProject(name, path);
+                                  _projectNameController.clear();
+                                  _projectPathController.clear();
+                                  Navigator.pop(context);
+                                } else {
+                                  _showMessage('Por favor, complete ambos campos.');
+                                }
+                              },
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  },
+                  child: const Text('Añadir Proyecto'),
                 ),
                 Expanded(
-                  flex: 2,
-                  child: const Center(
-                    child: Text('Seleccione un proyecto para ver los archivos'),
+                  child: ListView.builder(
+                    itemCount: _filteredProjects.length,
+                    itemBuilder: (context, index) {
+                      final project = _filteredProjects[index];
+                      return ListTile(
+                        title: Text(project['name'] ?? ''),
+                        onTap: () {
+                          _listFiles(project['path'] ?? '');
+                          setState(() {
+                            _selectedProjectPath = project['path'];
+                          });
+                        },
+                        trailing: IconButton(
+                          icon: const Icon(Icons.delete, color: Color.fromARGB(255, 255, 17, 0),),
+                          onPressed: () => _deleteProject(index),
+                        ),
+                      );
+                    },
                   ),
                 ),
               ],
