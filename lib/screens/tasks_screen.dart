@@ -53,6 +53,11 @@ class TaskManagerScreen extends StatefulWidget {
   _TaskManagerScreenState createState() => _TaskManagerScreenState();
 }
 
+extension DateTimeExtension on DateTime {
+  bool isSameDate(DateTime other) {
+    return year == other.year && month == other.month && day == other.day;
+  }
+}
 
 class _TaskManagerScreenState extends State<TaskManagerScreen> {
   final String filePath = r'\\desktop-co5hnd9\SERVIDOR B\Informatica\flutter\tareas\tasks.json';
@@ -61,6 +66,7 @@ class _TaskManagerScreenState extends State<TaskManagerScreen> {
   final TextEditingController _assigneeController = TextEditingController();
   String _selectedPriority = "Dibujantes";
   DateTime _selectedDate = DateTime.now();
+  bool _isAddingTask = false; // Controla la visibilidad del formulario de añadir tarea
 
   @override
   void initState() {
@@ -108,6 +114,8 @@ class _TaskManagerScreenState extends State<TaskManagerScreen> {
           'assignee': _assigneeController.text,
           'dueDate': _selectedDate.toIso8601String(),
         });
+        selectedPriority['tasks'].sort((a, b) => DateTime.parse(a['dueDate']).compareTo(DateTime.parse(b['dueDate']))); // Ordenar tareas por fecha
+        _isAddingTask = false; // Ocultar el formulario después de añadir la tarea
       });
 
       _taskController.clear();
@@ -242,7 +250,127 @@ String _formatDate(DateTime date) {
   return DateFormat('dd-MM-yyyy').format(date); // Formato día-mes-año
 }
 
+Color _getDueDateColor(DateTime dueDate) {
+  final now = DateTime.now();
+  if (dueDate.isBefore(now)) {
+    return const Color.fromARGB(255, 204, 14, 0); // Atrasado
+  } else if (dueDate.isSameDate(now)) {
+    return const Color.fromARGB(255, 168, 102, 2); // Mismo día
+  } else {
+    return Colors.blue; // Tiene tiempo
+  }
+}
+
+void _showAddTaskDialog() {
+  showDialog(
+    context: context,
+    builder: (context) {
+      final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+      return StatefulBuilder(
+        builder: (context, setState) {
+          return AlertDialog(
+            backgroundColor: isDarkMode
+                ? const Color.fromARGB(255, 40, 40, 40)
+                : Colors.white,
+            title: Text(
+              'Añadir Tarea',
+              style: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                DropdownButton<String>(
+                  value: _selectedPriority,
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedPriority = value!;
+                    });
+                  },
+                  items: priorities.map<DropdownMenuItem<String>>((priority) {
+                    return DropdownMenuItem(
+                      value: priority['title'],
+                      child: Text(priority['title']),
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: _taskController,
+                  decoration: InputDecoration(
+                    labelText: 'Título de la tarea',
+                    border: const OutlineInputBorder(),
+                    labelStyle: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: _assigneeController,
+                  decoration: InputDecoration(
+                    labelText: 'Encargado',
+                    border: const OutlineInputBorder(),
+                    labelStyle: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Fecha límite: ${_formatDate(_selectedDate)}',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: _getDueDateColor(_selectedDate),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    IconButton(
+                      icon: const Icon(Icons.calendar_today),
+                      onPressed: () {
+                        _pickDate(context, (pickedDate) {
+                          setState(() {
+                            _selectedDate = pickedDate;
+                          });
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  _taskController.clear();
+                  _assigneeController.clear();
+                },
+                child: Text(
+                  'Cancelar',
+                  style: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  _addTask();
+                  Navigator.pop(context);
+                },
+                child: Text(
+                  'Guardar',
+                  style: TextStyle(color: isDarkMode ? Colors.blue : Colors.blue),
+                ),
+              ),
+            ],
+          );
+        },
+      );
+    },
+  );
+}
+
+@override
 Widget build(BuildContext context) {
+  final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
   return Scaffold(
     appBar: AppBar(
       title: const Text('Gestión de Tareas', style: TextStyle(color: Colors.white)),
@@ -287,78 +415,6 @@ body: Stack(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Formulario para añadir tareas
-            DropdownButton<String>(
-              value: _selectedPriority,
-              onChanged: (value) {
-                setState(() {
-                  _selectedPriority = value!;
-                });
-              },
-              items: priorities.map<DropdownMenuItem<String>>((priority) {
-                return DropdownMenuItem(
-                  value: priority['title'],
-                  child: Text(priority['title']),
-                );
-              }).toList(),
-            ),
-            const SizedBox(height: 8),
-            TextField(
-              controller: _taskController,
-              decoration: InputDecoration(
-                labelText: 'Título de la tarea',
-                border: const OutlineInputBorder(),
-                labelStyle: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
-              ),
-            ),
-            const SizedBox(height: 8),
-            TextField(
-              controller: _assigneeController,
-              decoration: InputDecoration(
-                labelText: 'Encargado',
-                border: const OutlineInputBorder(),
-                labelStyle: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Text(
-                  'Fecha límite: ${_formatDate(_selectedDate)}',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Theme.of(context).textTheme.bodyLarge?.color,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                IconButton(
-                  icon: const Icon(Icons.calendar_today),
-                  onPressed: () {
-                    _pickDate(context, (pickedDate) {
-                      setState(() {
-                        _selectedDate = pickedDate;
-                      });
-                    });
-                  },
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Center(
-              child: ElevatedButton(
-  onPressed: _addTask,
-  style: ButtonStyle(
-    backgroundColor: MaterialStateProperty.all(const Color.fromARGB(255, 76, 78, 175)), // Cambia el color de fondo
-    foregroundColor: MaterialStateProperty.all(Colors.white), // Cambia el color del texto
-            padding: MaterialStateProperty.all(
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 12), // Ajusta el tamaño del botón
-          ),
-  ),
-  child: const Text('Añadir Tarea'),
-),
-
-            ),
             const SizedBox(height: 16),
             // Lista de tareas agrupadas por prioridades
             ...priorities.map((priority) {
@@ -400,7 +456,7 @@ body: Stack(
                                         Text(
                                           'Fecha límite: ${_formatDate(dueDate)}',
                                           style: TextStyle(
-                                            color: Theme.of(context).textTheme.bodyLarge?.color,
+                                            color: _getDueDateColor(dueDate),
                                           ),
                                         ),
                                       ],
@@ -456,6 +512,25 @@ body: Stack(
               );
             }).toList(),
           ],
+        ),
+      ),
+    ),
+    // Botón para añadir tarea en el centro abajo
+    Positioned(
+      bottom: 16,
+      left: 0,
+      right: 0,
+      child: Center(
+        child: ElevatedButton(
+          onPressed: _showAddTaskDialog,
+          style: ButtonStyle(
+            backgroundColor: MaterialStateProperty.all(const Color.fromARGB(255, 76, 78, 175)), // Cambia el color de fondo
+            foregroundColor: MaterialStateProperty.all(Colors.white), // Cambia el color del texto
+            padding: MaterialStateProperty.all(
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 12), // Ajusta el tamaño del botón
+            ),
+          ),
+          child: const Text('Añadir Tarea'),
         ),
       ),
     ),
