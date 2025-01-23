@@ -365,6 +365,8 @@ void _performDeleteFile(FileSystemEntity file) {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Gestión de Proyectos', style: TextStyle(color: Colors.white)),
@@ -393,139 +395,178 @@ void _performDeleteFile(FileSystemEntity file) {
                   padding: const EdgeInsets.all(6.0),
                   child: TextField(
                     controller: _searchController,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       labelText: 'Buscar proyectos...',
-                      border: OutlineInputBorder(),
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: isDarkMode ? Colors.white : Colors.black,
+                        ),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: isDarkMode ? Colors.white : Colors.black,
+                        ),
+                      ),
                     ),
                     onChanged: (value) => _filterProjects(),
                   ),
-                ),
-                ElevatedButton(
-                  style: ButtonStyle(
-                    backgroundColor: MaterialStateProperty.all(
-                        const Color.fromARGB(255, 76, 78, 175)),
-                    foregroundColor: MaterialStateProperty.all(Colors.white),
-                    padding: MaterialStateProperty.all(
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    ),
-                    textStyle: MaterialStateProperty.all(
-                      const TextStyle(fontSize: 16),
-                    ),
-                  ),
-                  onPressed: () {
-                    showDialog(
-                      context: context,
-                      builder: (context) {
-                        return AlertDialog(
-                          backgroundColor: Colors.white, // Color de fondo completamente opaco
-                          title: const Text('Añadir Proyecto'),
-                          content: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              TextField(
-                                controller: _projectNameController,
-                                decoration: InputDecoration(
-                                  labelText: 'Nombre del proyecto',
-                                  border: OutlineInputBorder(
-                                    borderSide: const BorderSide(
-                                      color: Colors.grey, // Color del borde
-                                      width: 1.5, // Grosor del borde
-                                    ),
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderSide: const BorderSide(
-                                      color: Colors.blue, // Color del borde al enfocar
-                                      width: 2.0,
-                                    ),
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 20),
-                              TextField(
-                                controller: _projectPathController,
-                                decoration: InputDecoration(
-                                  labelText: 'Ruta del proyecto',
-                                  border: OutlineInputBorder(
-                                    borderSide: const BorderSide(
-                                      color: Colors.grey,
-                                      width: 1.5,
-                                    ),
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderSide: const BorderSide(
-                                      color: Colors.blue,
-                                      width: 2.0,
-                                    ),
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  suffixIcon: IconButton(
-                                    icon: const Icon(Icons.folder),
-                                    onPressed: () async {
-                                      final result = await FilePicker.platform.getDirectoryPath();
-                                      if (result != null) {
-                                        setState(() {
-                                          _projectPathController.text = result;
-                                        });
-                                      }
-                                    },
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          actions: [
-                            TextButton(
-                              child: const Text('Cancelar'),
-                              onPressed: () {
-                                Navigator.pop(context);
-                                _projectNameController.clear();
-                                _projectPathController.clear();
-                              },
-                            ),
-                            TextButton(
-                              child: const Text('Agregar'),
-                              onPressed: () {
-                                final name = _projectNameController.text.trim();
-                                final path = _projectPathController.text.trim();
-                                if (name.isNotEmpty && path.isNotEmpty) {
-                                  _addProject(name, path);
-                                  _projectNameController.clear();
-                                  _projectPathController.clear();
-                                  Navigator.pop(context);
-                                } else {
-                                  _showMessage('Por favor, complete ambos campos.');
-                                }
-                              },
-                            ),
-                          ],
-                        );
-                      },
-                    );
-                  },
-                  child: const Text('Añadir Proyecto'),
                 ),
                 Expanded(
                   child: ListView.builder(
                     itemCount: _filteredProjects.length,
                     itemBuilder: (context, index) {
                       final project = _filteredProjects[index];
-                      return ListTile(
-                        title: Text(project['name'] ?? ''),
-                        onTap: () {
-                          _listFiles(project['path'] ?? '');
-                          setState(() {
-                            _selectedProjectPath = project['path'];
-                          });
-                        },
-                        trailing: IconButton(
-                          icon: const Icon(Icons.delete, color: Color.fromARGB(255, 255, 17, 0),),
-                          onPressed: () => _deleteProject(index),
-                        ),
+                      return Column(
+                        children: [
+                          ListTile(
+                            title: Text(
+                              project['name'] ?? '',
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.blue,
+                              ),
+                            ),
+                            onTap: () {
+                              _listFiles(project['path'] ?? '');
+                              setState(() {
+                                _selectedProjectPath = project['path'];
+                              });
+                            },
+                            trailing: IconButton(
+                              icon: const Icon(Icons.delete, color: Color.fromARGB(255, 255, 17, 0),),
+                              onPressed: () => _deleteProject(index),
+                            ),
+                          ),
+                          Divider(
+                            color: isDarkMode ? Colors.white : Colors.black, // Línea horizontal separadora
+                          ),
+                        ],
                       );
                     },
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: ElevatedButton(
+                    style: ButtonStyle(
+                      backgroundColor: MaterialStateProperty.all(
+                          const Color.fromARGB(255, 76, 78, 175)),
+                      foregroundColor: MaterialStateProperty.all(Colors.white),
+                      padding: MaterialStateProperty.all(
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      ),
+                      textStyle: MaterialStateProperty.all(
+                        const TextStyle(fontSize: 16),
+                      ),
+                    ),
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (context) {
+                          return AlertDialog(
+                            backgroundColor: isDarkMode
+                                ? const Color.fromARGB(255, 40, 40, 40)
+                                : Colors.white,
+                            title: Text(
+                              'Añadir Proyecto',
+                              style: TextStyle(
+                                color: isDarkMode ? Colors.white : Colors.black,
+                              ),
+                            ),
+                            content: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                TextField(
+                                  controller: _projectNameController,
+                                  style: TextStyle(
+                                    color: isDarkMode ? Colors.white : Colors.black,
+                                  ),
+                                  decoration: InputDecoration(
+                                    labelText: 'Nombre del proyecto',
+                                    labelStyle: TextStyle(
+                                      color: isDarkMode ? Colors.white : Colors.black,
+                                    ),
+                                    border: const OutlineInputBorder(),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderSide: BorderSide(
+                                        color: isDarkMode ? Colors.grey : Colors.black45,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 20),
+                                TextField(
+                                  controller: _projectPathController,
+                                  style: TextStyle(
+                                    color: isDarkMode ? Colors.white : Colors.black,
+                                  ),
+                                  decoration: InputDecoration(
+                                    labelText: 'Ruta del proyecto',
+                                    labelStyle: TextStyle(
+                                      color: isDarkMode ? Colors.white : Colors.black,
+                                    ),
+                                    border: const OutlineInputBorder(),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderSide: BorderSide(
+                                        color: isDarkMode ? Colors.grey : Colors.black45,
+                                      ),
+                                    ),
+                                    suffixIcon: IconButton(
+                                      icon: const Icon(Icons.folder),
+                                      onPressed: () async {
+                                        final result = await FilePicker.platform.getDirectoryPath();
+                                        if (result != null) {
+                                          setState(() {
+                                            _projectPathController.text = result;
+                                          });
+                                        }
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            actions: [
+                              TextButton(
+                                child: Text(
+                                  'Cancelar',
+                                  style: TextStyle(
+                                    color: isDarkMode ? Colors.white : Colors.black,
+                                  ),
+                                ),
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                  _projectNameController.clear();
+                                  _projectPathController.clear();
+                                },
+                              ),
+                              TextButton(
+                                child: Text(
+                                  'Agregar',
+                                  style: TextStyle(
+                                    color: isDarkMode ? Colors.blue : Colors.blue,
+                                  ),
+                                ),
+                                onPressed: () {
+                                  final name = _projectNameController.text.trim();
+                                  final path = _projectPathController.text.trim();
+                                  if (name.isNotEmpty && path.isNotEmpty) {
+                                    _addProject(name, path);
+                                    _projectNameController.clear();
+                                    _projectPathController.clear();
+                                    Navigator.pop(context);
+                                  } else {
+                                    _showMessage('Por favor, complete ambos campos.');
+                                  }
+                                },
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    },
+                    child: const Text('Añadir Proyecto'),
                   ),
                 ),
               ],
@@ -540,7 +581,7 @@ void _performDeleteFile(FileSystemEntity file) {
                     children: [
                       Text(
                         'Proyecto: ${_projects.firstWhere(
-                          (project) => project['path'] == _selectedProjectPath,
+                          (project) => _selectedProjectPath!.startsWith(project['path']!),
                           orElse: () => {'name': 'Sin proyecto seleccionado'},
                         )['name']}',
                         style: const TextStyle(
@@ -554,21 +595,37 @@ void _performDeleteFile(FileSystemEntity file) {
                         child: Wrap(
                           spacing: 8.0,
                           children: [
-                            ElevatedButton(
-                              style: ButtonStyle(
-                                backgroundColor: MaterialStateProperty.all(
-                                    const Color.fromARGB(255, 76, 78, 175)),
-                                foregroundColor: MaterialStateProperty.all(Colors.white),
-                                padding: MaterialStateProperty.all(
-                                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                ),
-                                textStyle: MaterialStateProperty.all(
-                                  const TextStyle(fontSize: 16),
-                                ),
-                              ),
-                              onPressed: _goBack,
-                              child: const Text('Atrás'),
-                            ),
+ElevatedButton(
+  onPressed: _selectedProjectPath != null && _selectedProjectPath != _projects.firstWhere(
+    (project) => project['path'] == _selectedProjectPath,
+    orElse: () => {'path': ''},
+  )['path']
+      ? _goBack
+      : null,
+  style: ButtonStyle(
+    backgroundColor: MaterialStateProperty.all(
+      _selectedProjectPath != null && _selectedProjectPath != _projects.firstWhere(
+        (project) => project['path'] == _selectedProjectPath,
+        orElse: () => {'path': ''},
+      )['path']
+          ? const Color.fromARGB(255, 76, 78, 175) // Color activo
+          : Colors.grey, // Color deshabilitado
+    ),
+    foregroundColor: MaterialStateProperty.all(
+      _selectedProjectPath != null && _selectedProjectPath != _projects.firstWhere(
+        (project) => project['path'] == _selectedProjectPath,
+        orElse: () => {'path': ''},
+      )['path']
+          ? Colors.white
+          : Colors.black38, // Ajusta el color del texto
+    ),
+    padding: MaterialStateProperty.all(
+      const EdgeInsets.symmetric(horizontal: 16, vertical: 12), // Ajusta el tamaño del botón
+    ),
+  ),
+  child: const Text('Atrás'),
+),
+
                             ElevatedButton(
                               style: ButtonStyle(
                                 backgroundColor: MaterialStateProperty.all(
