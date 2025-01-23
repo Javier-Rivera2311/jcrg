@@ -719,102 +719,104 @@ body: Padding(
       const SizedBox(height: 16),
       // Tabla
 Expanded(
-  child: Padding(
-    padding: const EdgeInsets.only(top: 16.0), // Espaciado debajo de la barra de búsqueda
-    child: SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: DataTable(
-        headingRowColor: MaterialStateProperty.resolveWith<Color>(
-          (Set<MaterialState> states) =>
-              Theme.of(context).brightness == Brightness.dark
-                  ? const Color.fromARGB(255, 60, 60, 60)
-                  : const Color.fromARGB(255, 230, 230, 230),
-        ),
-        columnSpacing: 32.0,
-        horizontalMargin: 16.0,
-        columns: const [
-          DataColumn(
-            label: Text(
-              'Título',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+  child: LayoutBuilder(
+    builder: (context, constraints) {
+      return SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minWidth: constraints.maxWidth),
+          child: DataTable(
+            headingRowColor: MaterialStateProperty.resolveWith<Color>(
+              (Set<MaterialState> states) =>
+                  Theme.of(context).brightness == Brightness.dark
+                      ? const Color.fromARGB(255, 60, 60, 60)
+                      : const Color.fromARGB(255, 230, 230, 230),
             ),
-          ),
-          DataColumn(
-            label: Text(
-              'Fecha',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-            ),
-          ),
-          DataColumn(
-            label: Text(
-              'Hora',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-            ),
-          ),
-          DataColumn(
-            label: Text(
-              'Tipo',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-            ),
-          ),
-          DataColumn(
-            label: Text(
-              'Detalles (Link / ubicación)',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-            ),
-          ),
-          DataColumn(
-            label: Text(
-              'Editar',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-            ),
-          ),
-          DataColumn(
-            label: Text(
-              'Borrar',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-            ),
-          ),
-        ],
-        rows: filteredMeetings.map((meeting) {
-          final bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
+            columnSpacing: 32.0,
+            horizontalMargin: 16.0,
+            columns: const [
+              DataColumn(
+                label: Text(
+                  'Título',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                ),
+              ),
+              DataColumn(
+                label: Text(
+                  'Fecha',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                ),
+              ),
+              DataColumn(
+                label: Text(
+                  'Hora',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                ),
+              ),
+              DataColumn(
+                label: Text(
+                  'Tipo',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                ),
+              ),
+              DataColumn(
+                label: Text(
+                  'Detalles (Link / ubicación)',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                ),
+              ),
+              DataColumn(
+                label: Text(
+                  'Editar',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                ),
+              ),
+              DataColumn(
+                label: Text(
+                  'Borrar',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                ),
+              ),
+            ],
+            rows: filteredMeetings.map((meeting) {
+              final bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
-          return DataRow(
-            color: MaterialStateProperty.resolveWith<Color>(
-              (Set<MaterialState> states) => filteredMeetings.indexOf(meeting) % 2 == 0
-                  ? (isDarkMode
-                      ? const Color.fromARGB(255, 50, 50, 50)
-                      : const Color.fromARGB(255, 245, 245, 245))
-                  : (isDarkMode
-                      ? const Color.fromARGB(255, 40, 40, 40)
-                      : Colors.white),
-            ),
-            cells: [
-              DataCell(Text(
-                meeting['title'] ?? 'Sin título',
-                style: TextStyle(
-                    color: isDarkMode ? Colors.white : Colors.black,
-                    fontSize: 16),
-              )),
-              DataCell(Text(
-                DateFormat('dd/MM/yyyy')
-                    .format(DateTime.parse(meeting['date']).toLocal()),
-                style: TextStyle(
-                    color: isDarkMode ? Colors.white : Colors.black,
-                    fontSize: 16),
-              )),
-              DataCell(Text(
-                meeting['time'] ?? '',
-                style: TextStyle(
-                    color: isDarkMode ? Colors.white : Colors.black,
-                    fontSize: 16),
-              )),
-              DataCell(Text(
-                meeting['type'] ?? '',
-                style: TextStyle(
-                    color: isDarkMode ? Colors.white : Colors.black,
-                    fontSize: 16),
-              )),
+              return DataRow(
+                color: MaterialStateProperty.resolveWith<Color>(
+                  (Set<MaterialState> states) => filteredMeetings.indexOf(meeting) % 2 == 0
+                      ? (isDarkMode
+                          ? const Color.fromARGB(255, 50, 50, 50)
+                          : const Color.fromARGB(255, 245, 245, 245))
+                      : (isDarkMode
+                          ? const Color.fromARGB(255, 40, 40, 40)
+                          : Colors.white),
+                ),
+                cells: [
+                  DataCell(Text(
+                    meeting['title'] ?? 'Sin título',
+                    style: TextStyle(
+                        color: isDarkMode ? Colors.white : Colors.black,
+                        fontSize: 16),
+                  )),
+                  DataCell(Text(
+                    DateFormat('dd/MM/yyyy')
+                        .format(DateTime.parse(meeting['date']).toLocal()),
+                    style: TextStyle(
+                        color: isDarkMode ? Colors.white : Colors.black,
+                        fontSize: 16),
+                  )),
+                  DataCell(Text(
+                    meeting['time'] ?? '',
+                    style: TextStyle(
+                        color: isDarkMode ? Colors.white : Colors.black,
+                        fontSize: 16),
+                  )),
+                  DataCell(Text(
+                    meeting['type'] ?? '',
+                    style: TextStyle(
+                        color: isDarkMode ? Colors.white : Colors.black,
+                        fontSize: 16),
+                  )),
 DataCell(
   meeting['type'] == 'presencial'
       ? Row(
@@ -861,8 +863,8 @@ DataCell(
           children: [
             Expanded(
               child: Text(
-                meeting['url'] != null && meeting['url']!.length > 50
-                    ? '${meeting['url']!.substring(0, 50)}...' // Mostrar solo los primeros 40caracteres
+                meeting['url'] != null && meeting['url']!.length > 40
+                    ? '${meeting['url']!.substring(0, 40)}...' // Mostrar solo los primeros 40caracteres
                     : meeting['url'] ?? 'N/A',
                 style: const TextStyle(color: Colors.blue, fontSize: 16),
               ),
@@ -897,27 +899,29 @@ DataCell(
         ),
 ),
 
-              DataCell(
-                IconButton(
-                  icon: const Icon(Icons.edit, color: Colors.blue),
-                  tooltip: 'Editar reunión',
-                  onPressed: () =>
-                      _editMeeting(filteredMeetings.indexOf(meeting)),
-                ),
-              ),
-              DataCell(
-                IconButton(
-                  icon: const Icon(Icons.delete, color: Colors.red),
-                  tooltip: 'Borrar reunión',
-                  onPressed: () =>
-                      _deleteMeeting(meetings.indexOf(meeting)),
-                ),
-              ),
-            ],
-          );
-        }).toList(),
-      ),
-    ),
+                  DataCell(
+                    IconButton(
+                      icon: const Icon(Icons.edit, color: Colors.blue),
+                      tooltip: 'Editar reunión',
+                      onPressed: () =>
+                          _editMeeting(filteredMeetings.indexOf(meeting)),
+                    ),
+                  ),
+                  DataCell(
+                    IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.red),
+                      tooltip: 'Borrar reunión',
+                      onPressed: () =>
+                          _deleteMeeting(meetings.indexOf(meeting)),
+                    ),
+                  ),
+                ],
+              );
+            }).toList(),
+          ),
+        ),
+      );
+    },
   ),
 ),
 

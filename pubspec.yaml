@@ -24,7 +24,10 @@ dependencies:
   easy_sidemenu: ^0.6.0
   flutter_map: ^4.0.0
   latlong2: ^0.8.1
-
+  window_manager: ^0.2.0
+  printing: ^5.10.0
+  pdf: ^3.9.0
+  
 dev_dependencies:
   flutter_test:
     sdk: flutter
