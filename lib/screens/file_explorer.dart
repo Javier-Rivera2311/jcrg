@@ -279,6 +279,7 @@ void _listFiles(String path) {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -305,9 +306,18 @@ void _listFiles(String path) {
             padding: const EdgeInsets.all(8.0),
             child: TextField(
               controller: _searchController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'Buscar archivos...',
-                border: OutlineInputBorder(),
+                border: OutlineInputBorder(
+                  borderSide: BorderSide(
+                    color: isDarkMode ? Colors.white : Colors.black,
+                  ),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(
+                    color: isDarkMode ? Colors.white : Colors.black,
+                  ),
+                ),
               ),
               onChanged: _filterFiles,
             ),
@@ -452,5 +462,5 @@ void main() {
   runApp(MaterialApp(
     title: 'Explorador de Archivos',
     home: const FileExplorer(),
-  ));
+    ));
 }

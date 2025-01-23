@@ -179,73 +179,78 @@ void _editTask(int priorityIndex, int taskIndex) {
   showDialog(
     context: context,
     builder: (context) {
-      return AlertDialog(
-        title: const Text('Editar Tarea'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: editTaskController,
-              decoration: const InputDecoration(labelText: 'Título de la tarea'),
-            ),
-            const SizedBox(height: 8),
-            TextField(
-              controller: editAssigneeController,
-              decoration: const InputDecoration(labelText: 'Encargado(a)'),
-            ),
-            const SizedBox(height: 8),
-            GestureDetector(
-              onTap: () async {
-                final DateTime? pickedDate = await showDatePicker(
-                  context: context,
-                  initialDate: editDate,
-                  firstDate: DateTime(2000),
-                  lastDate: DateTime(2100),
-                );
-                if (pickedDate != null) {
-                  setState(() {
-                    editDate = pickedDate; // Actualiza la fecha seleccionada
-                  });
-                }
-              },
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                decoration: BoxDecoration(
-                  color: const Color.fromARGB(255, 255, 255, 255),
-                  border: Border.all(color: Colors.grey[400]!),
-                  borderRadius: BorderRadius.circular(5),
+      return StatefulBuilder(
+        builder: (context, setState) {
+          return AlertDialog(
+            title: const Text('Editar Tarea'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: editTaskController,
+                  decoration: const InputDecoration(labelText: 'Título de la tarea'),
                 ),
-                child: Text(
-                  'Fecha límite: ${editDate.toLocal().toString().split(' ')[0]}',
-                  style: const TextStyle(fontSize: 16, color: Colors.black),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: editAssigneeController,
+                  decoration: const InputDecoration(labelText: 'Encargado(a)'),
                 ),
+                const SizedBox(height: 8),
+                GestureDetector(
+                  onTap: () async {
+                    final DateTime? pickedDate = await showDatePicker(
+                      context: context,
+                      initialDate: editDate,
+                      firstDate: DateTime(2000),
+                      lastDate: DateTime(2100),
+                    );
+                    if (pickedDate != null) {
+                      setState(() {
+                        editDate = pickedDate; // Actualiza la fecha seleccionada
+                      });
+                    }
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                    decoration: BoxDecoration(
+                      color: const Color.fromARGB(255, 255, 255, 255),
+                      border: Border.all(color: Colors.grey[400]!),
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                    child: Text(
+                      'Fecha límite: ${_formatDate(editDate)}',
+                      style: const TextStyle(fontSize: 16, color: Colors.black),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancelar'),
               ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
-          ),
-          TextButton(
-            onPressed: () {
-              _updateTask(
-                priorityIndex,
-                taskIndex,
-                editTaskController.text,
-                editAssigneeController.text,
-                editDate, // Usa la fecha actualizada
-              );
-              Navigator.pop(context);
-            },
-            child: const Text('Guardar'),
-          ),
-        ],
+              TextButton(
+                onPressed: () {
+                  _updateTask(
+                    priorityIndex,
+                    taskIndex,
+                    editTaskController.text,
+                    editAssigneeController.text,
+                    editDate, // Usa la fecha actualizada
+                  );
+                  Navigator.pop(context);
+                },
+                child: const Text('Guardar'),
+              ),
+            ],
+          );
+        },
       );
     },
   );
 }
+
 String _formatDate(DateTime date) {
   return DateFormat('dd-MM-yyyy').format(date); // Formato día-mes-año
 }
@@ -255,7 +260,7 @@ Color _getDueDateColor(DateTime dueDate) {
   if (dueDate.isBefore(now)) {
     return const Color.fromARGB(255, 204, 14, 0); // Atrasado
   } else if (dueDate.isSameDate(now)) {
-    return const Color.fromARGB(255, 168, 102, 2); // Mismo día
+    return const Color.fromARGB(255, 255, 165, 0); // Mismo día (naranja)
   } else {
     return Colors.blue; // Tiene tiempo
   }
@@ -373,7 +378,7 @@ Widget build(BuildContext context) {
 
   return Scaffold(
     appBar: AppBar(
-      title: const Text('Gestión de Tareas', style: TextStyle(color: Colors.white)),
+      title: const Text('Gestión de Tareas', style: TextStyle(color: Colors.white, fontSize: 22)),
       backgroundColor: const Color.fromARGB(255, 107, 135, 182),
       leading: Center(
           child: Image.asset(
@@ -427,7 +432,7 @@ body: Stack(
                 child: ExpansionTile(
                   title: Text(
                     priority['title'],
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
                   ),
                   children: priority['tasks'].asMap().entries.map<Widget>((entry) {
                     final taskIndex = entry.key;
@@ -447,16 +452,17 @@ body: Stack(
                                   children: [
                                     Text(
                                       task['title'],
-                                      style: const TextStyle(fontWeight: FontWeight.bold),
+                                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                                     ),
                                     Row(
                                       children: [
-                                        Text('Encargado: ${task['assignee']}'),
+                                        Text('Encargado: ${task['assignee']}', style: const TextStyle(fontSize: 16)),
                                         const SizedBox(width: 10),
                                         Text(
                                           'Fecha límite: ${_formatDate(dueDate)}',
                                           style: TextStyle(
                                             color: _getDueDateColor(dueDate),
+                                            fontSize: 16,
                                           ),
                                         ),
                                       ],
@@ -479,7 +485,7 @@ body: Stack(
                                         value: status,
                                         child: Text(
                                           status,
-                                          style: TextStyle(color: _getStatusColor(status)),
+                                          style: TextStyle(color: _getStatusColor(status), fontSize: 16),
                                         ),
                                       );
                                     }).toList(),
@@ -530,7 +536,7 @@ body: Stack(
               const EdgeInsets.symmetric(horizontal: 16, vertical: 12), // Ajusta el tamaño del botón
             ),
           ),
-          child: const Text('Añadir Tarea'),
+          child: const Text('Añadir Tarea', style: TextStyle(fontSize: 18)),
         ),
       ),
     ),

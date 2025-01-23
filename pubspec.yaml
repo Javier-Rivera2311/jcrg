@@ -27,6 +27,10 @@ dependencies:
   window_manager: ^0.2.0
   printing: ^5.10.0
   pdf: ^3.9.0
+  table_calendar: ^3.0.0
+
+
+
   
 dev_dependencies:
   flutter_test:

@@ -162,6 +162,7 @@ String _searchQuery = "";
 
 @override
 Widget build(BuildContext context) {
+  final isDarkMode = Theme.of(context).brightness == Brightness.dark;
   return Scaffold(
     appBar: AppBar(
       title: const Text('Gestión de Entregas', style: TextStyle(color: Colors.white)),
@@ -191,7 +192,14 @@ Widget build(BuildContext context) {
               labelText: 'Buscar entregas',
               prefixIcon: const Icon(Icons.search),
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8.0),
+                borderSide: BorderSide(
+                  color: isDarkMode ? Colors.white : Colors.black,
+                ),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderSide: BorderSide(
+                  color: isDarkMode ? Colors.white : Colors.black,
+                ),
               ),
             ),
           ),
