@@ -190,6 +190,7 @@ Widget build(BuildContext context) {
             },
             decoration: InputDecoration(
               labelText: 'Buscar entregas',
+              labelStyle: TextStyle(fontSize: 18), // Increase font size
               prefixIcon: const Icon(Icons.search),
               border: OutlineInputBorder(
                 borderSide: BorderSide(
@@ -202,6 +203,7 @@ Widget build(BuildContext context) {
                 ),
               ),
             ),
+            style: TextStyle(fontSize: 18), // Increase font size
           ),
           const SizedBox(height: 16),
 
@@ -217,8 +219,14 @@ Widget build(BuildContext context) {
                     delivery['assignee'].toLowerCase().contains(_searchQuery)) {
                   return Card(
                     child: ListTile(
-                      title: Text(delivery['title']),
-                      subtitle: Text('Encargado: ${delivery['assignee']}'),
+                      title: Text(
+                        delivery['title'],
+                        style: TextStyle(fontSize: 18), // Increase font size
+                      ),
+                      subtitle: Text(
+                        'Encargado: ${delivery['assignee']}',
+                        style: TextStyle(fontSize: 16), // Increase font size
+                      ),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [

@@ -94,7 +94,6 @@ class _ContactManagerScreenState extends State<ContactManagerScreen> {
 
   @override
 Widget build(BuildContext context) {
-  final isDarkMode = Theme.of(context).brightness == Brightness.dark;
   final filteredContacts = _contacts
       .where((contact) => contact['name']!.toLowerCase().contains(_searchQuery.toLowerCase()))
       .toList();
@@ -130,19 +129,10 @@ Widget build(BuildContext context) {
                   _searchQuery = value;
                 });
               },
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Buscar contacto',
                 prefixIcon: Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderSide: BorderSide(
-                    color: isDarkMode ? Colors.white : Colors.black,
-                  ),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(
-                    color: isDarkMode ? Colors.white : Colors.black,
-                  ),
-                ),
+                border: OutlineInputBorder(),
               ),
             ),
           ),

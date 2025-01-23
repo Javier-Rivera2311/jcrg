@@ -674,7 +674,6 @@ showDialog(
 
 @override
 Widget build(BuildContext context) {
-  final isDarkMode = Theme.of(context).brightness == Brightness.dark;
   return Scaffold(
     appBar: AppBar(
       title: const Text('Lista de Reuniones', style: TextStyle(color: Colors.white)),
@@ -712,14 +711,8 @@ body: Padding(
           prefixIcon: const Icon(Icons.search),
           hintText: 'Buscar reunión',
           border: OutlineInputBorder(
-            borderSide: BorderSide(
-              color: isDarkMode ? Colors.white : Colors.black,
-            ),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderSide: BorderSide(
-              color: isDarkMode ? Colors.white : Colors.black,
-            ),
+            borderRadius: BorderRadius.circular(8),
+            borderSide: const BorderSide(color: Colors.grey),
           ),
         ),
       ),
