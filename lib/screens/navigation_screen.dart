@@ -39,7 +39,7 @@ class _NavigationScreenState extends State<NavigationScreen> {
       ),
       pane: NavigationPane(
         header: Padding(
-          padding: const EdgeInsets.only(left: 20),
+          padding: const EdgeInsets.only(left: 25),
           child: DefaultTextStyle(
             style: FluentTheme.of(context).typography.title ??
                 const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),

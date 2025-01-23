@@ -794,26 +794,26 @@ Expanded(
                 meeting['title'] ?? 'Sin título',
                 style: TextStyle(
                     color: isDarkMode ? Colors.white : Colors.black,
-                    fontSize: 18),
+                    fontSize: 16),
               )),
               DataCell(Text(
                 DateFormat('dd/MM/yyyy')
                     .format(DateTime.parse(meeting['date']).toLocal()),
                 style: TextStyle(
                     color: isDarkMode ? Colors.white : Colors.black,
-                    fontSize: 18),
+                    fontSize: 16),
               )),
               DataCell(Text(
                 meeting['time'] ?? '',
                 style: TextStyle(
                     color: isDarkMode ? Colors.white : Colors.black,
-                    fontSize: 18),
+                    fontSize: 16),
               )),
               DataCell(Text(
                 meeting['type'] ?? '',
                 style: TextStyle(
                     color: isDarkMode ? Colors.white : Colors.black,
-                    fontSize: 18),
+                    fontSize: 16),
               )),
 DataCell(
   meeting['type'] == 'presencial'
@@ -821,8 +821,8 @@ DataCell(
           children: [
             Expanded(
               child: Text(
-                meeting['location'] != null && meeting['location']!.length > 15
-                    ? '${meeting['location']!.substring(0, 15)}...' // Mostrar solo los primeros 15 caracteres
+                meeting['location'] != null && meeting['location']!.length > 40
+                    ? '${meeting['location']!.substring(0, 40)}...' // Mostrar solo los primeros 15 caracteres
                     : meeting['location'] ?? 'N/A',
                 style: TextStyle(
                     color: isDarkMode ? Colors.white : Colors.black,
@@ -861,10 +861,10 @@ DataCell(
           children: [
             Expanded(
               child: Text(
-                meeting['url'] != null && meeting['url']!.length > 40
-                    ? '${meeting['url']!.substring(0, 40)}...' // Mostrar solo los primeros 40caracteres
+                meeting['url'] != null && meeting['url']!.length > 50
+                    ? '${meeting['url']!.substring(0, 50)}...' // Mostrar solo los primeros 40caracteres
                     : meeting['url'] ?? 'N/A',
-                style: const TextStyle(color: Colors.blue, fontSize: 18),
+                style: const TextStyle(color: Colors.blue, fontSize: 16),
               ),
             ),
             IconButton(
