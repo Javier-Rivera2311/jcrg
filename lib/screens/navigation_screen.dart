@@ -3,9 +3,9 @@ import 'package:jcrg/screens/file_explorer.dart';
 import 'package:jcrg/screens/tasks_screen.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:jcrg/screens/projects_screen.dart';
-import 'package:jcrg/screens/deliveries.dart';
 import 'package:jcrg/screens/impressions.dart';
 import 'package:jcrg/screens/meetings.dart';
+import 'package:jcrg/screens/servidor.dart';
 
 
 class NavigationScreen extends StatefulWidget {
@@ -59,6 +59,11 @@ class _NavigationScreenState extends State<NavigationScreen> {
             title: const Text('Lista de tareas'),
             body: TaskManagerApp(),
           ),
+            PaneItem(
+              icon: const Icon(FluentIcons.cloud),
+              title: const Text('Servidor'),
+              body: Servidor(),
+          ),
           PaneItem(
             icon: const Icon(FluentIcons.cloud),
             title: const Text('Servidor B'),
@@ -73,11 +78,6 @@ class _NavigationScreenState extends State<NavigationScreen> {
                 icon: const Icon(FluentIcons.project_document),
                 title: const Text('Proyectos'),
                 body: const ProjectManager(),
-              ),
-              PaneItem(
-                icon: const Icon(FluentIcons.send_mirrored),
-                title: const Text('Entregas'),
-                body: DeliveriesScreen(), // Submenú para entregas
               ),
               PaneItem(
                 icon: const Icon(FluentIcons.group),

@@ -7,15 +7,15 @@ import 'package:flutter/material.dart';
 import 'package:jcrg/widgets/file_utils.dart';
 import 'package:jcrg/screens/theme_switcher.dart';
 
-class FileExplorer extends StatefulWidget {
-  const FileExplorer({super.key});
+class Servidor extends StatefulWidget {
+  const Servidor({super.key});
 
   @override
-  _FileExplorerState createState() => _FileExplorerState();
+  _ServidorState createState() => _ServidorState();
 }
 
-class _FileExplorerState extends State<FileExplorer> {
-  String _currentPath = r'\\desktop-co5hnd9\SERVIDOR B';
+class _ServidorState extends State<Servidor> {
+  String _currentPath = r'\\desktop-co5hnd9\SERVIDOR';
   List<FileSystemEntity> _files = [];
   List<FileSystemEntity> _filteredFiles = [];
   final Map<String, DateTime> _fileRegistry = {}; // Registro de archivos con fechas
@@ -84,7 +84,7 @@ void _listFiles(String path) {
 }
 
 void _goBack() {
-  if (_currentPath != r'\\desktop-co5hnd9\SERVIDOR B') {
+  if (_currentPath != r'\\desktop-co5hnd9\SERVIDOR') {
     final parentDir = Directory(_currentPath).parent.path;
     _listFiles(parentDir);
   }
@@ -289,7 +289,7 @@ void _goBack() {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'SERVIDOR B',
+          'SERVIDOR',
           style: TextStyle(color: Colors.white),
         ),
         backgroundColor: const Color.fromARGB(255, 107, 135, 182),
@@ -335,15 +335,15 @@ void _goBack() {
               spacing: 8.0,
               children: [
                 ElevatedButton(
-                  onPressed: _currentPath != r'\\desktop-co5hnd9\SERVIDOR B' ? _goBack : null,
+                  onPressed: _currentPath != r'\\desktop-co5hnd9\SERVIDOR' ? _goBack : null,
                   style: ButtonStyle(
                     backgroundColor: MaterialStateProperty.all(
-                      _currentPath != r'\\desktop-co5hnd9\SERVIDOR B'
+                      _currentPath != r'\\desktop-co5hnd9\SERVIDOR'
                           ? const Color.fromARGB(255, 76, 78, 175)
                           : Colors.grey,
                     ),
                     foregroundColor: MaterialStateProperty.all(
-                      _currentPath != r'\\desktop-co5hnd9\SERVIDOR B'
+                      _currentPath != r'\\desktop-co5hnd9\SERVIDOR'
                           ? Colors.white
                           : Colors.black38,
                     ),
@@ -475,6 +475,6 @@ ElevatedButton(
 void main() {
   runApp(MaterialApp(
     title: 'Explorador de Archivos',
-    home: const FileExplorer(),
-   ));
+    home: const Servidor(), // Correct class name
+  ));
 }
