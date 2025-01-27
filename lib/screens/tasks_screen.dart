@@ -407,137 +407,129 @@ Widget build(BuildContext context) {
       
     ),
     
-body: Stack(
+body: Column(
   children: [
-    // Fondo de color basado en el tema
-    Container(
-      color: Theme.of(context).scaffoldBackgroundColor,
-    ),
-    // Contenido principal
-    SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 16),
-            // Lista de tareas agrupadas por prioridades
-            ...priorities.map((priority) {
-              return Card(
-                margin: const EdgeInsets.all(8),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                elevation: 4,
-                child: ExpansionTile(
-                  title: Text(
-                    priority['title'],
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+    Expanded(
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 16),
+              // Lista de tareas agrupadas por prioridades
+              ...priorities.map((priority) {
+                return Card(
+                  margin: const EdgeInsets.all(8),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                  children: priority['tasks'].asMap().entries.map<Widget>((entry) {
-                    final taskIndex = entry.key;
-                    final task = entry.value;
-                    final dueDate = DateTime.parse(task['dueDate']);
+                  elevation: 4,
+                  child: ExpansionTile(
+                    title: Text(
+                      priority['title'],
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                    ),
+                    children: priority['tasks'].asMap().entries.map<Widget>((entry) {
+                      final taskIndex = entry.key;
+                      final task = entry.value;
+                      final dueDate = DateTime.parse(task['dueDate']);
 
-                    return Column(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      task['title'],
-                                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                                    ),
-                                    Row(
-                                      children: [
-                                        Text('Encargado: ${task['assignee']}', style: const TextStyle(fontSize: 16)),
-                                        const SizedBox(width: 10),
-                                        Text(
-                                          'Fecha límite: ${_formatDate(dueDate)}',
-                                          style: TextStyle(
-                                            color: _getDueDateColor(dueDate),
-                                            fontSize: 16,
+                      return Column(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        task['title'],
+                                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                                      ),
+                                      Row(
+                                        children: [
+                                          Text('Encargado: ${task['assignee']}', style: const TextStyle(fontSize: 16)),
+                                          const SizedBox(width: 10),
+                                          Text(
+                                            'Fecha límite: ${_formatDate(dueDate)}',
+                                            style: TextStyle(
+                                              color: _getDueDateColor(dueDate),
+                                              fontSize: 16,
+                                            ),
                                           ),
-                                        ),
-                                      ],
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Row(
+                                  children: [
+                                    DropdownButton<String>(
+                                      value: task['status'],
+                                      onChanged: (newStatus) {
+                                        setState(() {
+                                          task['status'] = newStatus!;
+                                          _saveTasks();
+                                        });
+                                      },
+                                      items: ['Pendiente', 'En progreso', 'Completada'].map((status) {
+                                        return DropdownMenuItem(
+                                          value: status,
+                                          child: Text(
+                                            status,
+                                            style: TextStyle(color: _getStatusColor(status), fontSize: 16),
+                                          ),
+                                        );
+                                      }).toList(),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    IconButton(
+                                      icon: const Icon(Icons.edit, color: Colors.blue),
+                                      onPressed: () => _editTask(
+                                        priorities.indexOf(priority),
+                                        taskIndex,
+                                      ),
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.delete, color: Colors.red),
+                                      onPressed: () => _deleteTask(
+                                        priorities.indexOf(priority),
+                                        taskIndex,
+                                      ),
                                     ),
                                   ],
                                 ),
-                              ),
-                              Row(
-                                children: [
-                                  DropdownButton<String>(
-                                    value: task['status'],
-                                    onChanged: (newStatus) {
-                                      setState(() {
-                                        task['status'] = newStatus!;
-                                        _saveTasks();
-                                      });
-                                    },
-                                    items: ['Pendiente', 'En progreso', 'Completada'].map((status) {
-                                      return DropdownMenuItem(
-                                        value: status,
-                                        child: Text(
-                                          status,
-                                          style: TextStyle(color: _getStatusColor(status), fontSize: 16),
-                                        ),
-                                      );
-                                    }).toList(),
-                                  ),
-                                  const SizedBox(width: 10),
-                                  IconButton(
-                                    icon: const Icon(Icons.edit, color: Colors.blue),
-                                    onPressed: () => _editTask(
-                                      priorities.indexOf(priority),
-                                      taskIndex,
-                                    ),
-                                  ),
-                                  IconButton(
-                                    icon: const Icon(Icons.delete, color: Colors.red),
-                                    onPressed: () => _deleteTask(
-                                      priorities.indexOf(priority),
-                                      taskIndex,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
-                        const Divider(thickness: 1, height: 1, color: Colors.grey),
-                      ],
-                    );
-                  }).toList(),
-                ),
-              );
-            }).toList(),
-          ],
+                          const Divider(thickness: 1, height: 1, color: Colors.grey),
+                        ],
+                      );
+                    }).toList(),
+                  ),
+                );
+              }).toList(),
+            ],
+          ),
         ),
       ),
     ),
-    // Botón para añadir tarea en el centro abajo
-    Positioned(
-      bottom: 16,
-      left: 0,
-      right: 0,
-      child: Center(
-        child: ElevatedButton(
-          onPressed: _showAddTaskDialog,
-          style: ButtonStyle(
-            backgroundColor: MaterialStateProperty.all(const Color.fromARGB(255, 76, 78, 175)), // Cambia el color de fondo
-            foregroundColor: MaterialStateProperty.all(Colors.white), // Cambia el color del texto
-            padding: MaterialStateProperty.all(
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 12), // Ajusta el tamaño del botón
-            ),
+    Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: ElevatedButton(
+        onPressed: _showAddTaskDialog,
+        style: ButtonStyle(
+          backgroundColor: MaterialStateProperty.all(const Color.fromARGB(255, 76, 78, 175)), // Cambia el color de fondo
+          foregroundColor: MaterialStateProperty.all(Colors.white), // Cambia el color del texto
+          padding: MaterialStateProperty.all(
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 12), // Ajusta el tamaño del botón
           ),
-          child: const Text('Añadir Tarea', style: TextStyle(fontSize: 18)),
         ),
+        child: const Text('Añadir Tarea', style: TextStyle(fontSize: 18)),
       ),
     ),
   ],

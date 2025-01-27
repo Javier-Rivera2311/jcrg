@@ -95,9 +95,14 @@ class _ContactManagerScreenState extends State<ContactManagerScreen> {
   @override
 Widget build(BuildContext context) {
   final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-  final filteredContacts = _contacts
-      .where((contact) => contact['name']!.toLowerCase().contains(_searchQuery.toLowerCase()))
-      .toList();
+  final filteredContacts = _contacts.where((contact) {
+    final query = _searchQuery.toLowerCase();
+    return contact['name']!.toLowerCase().contains(query) ||
+           contact['email']!.toLowerCase().contains(query) ||
+           contact['phone']!.toLowerCase().contains(query) ||
+           contact['cargo']!.toLowerCase().contains(query) ||
+           contact['comuna']!.toLowerCase().contains(query);
+  }).toList();
 
   return Scaffold(
     appBar: AppBar(
