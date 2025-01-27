@@ -210,6 +210,30 @@ void _goBack() {
     }
   }
 
+Future<void> _copySelectedFiles() async {
+  try {
+    final result = await FilePicker.platform.getDirectoryPath();
+    if (result != null) {
+      for (var filePath in _selectedFiles) {
+        final file = File(filePath);
+        final newFilePath = '$result${Platform.pathSeparator}${file.path.split(Platform.pathSeparator).last}';
+        file.copySync(newFilePath);
+
+        setState(() {
+          _fileRegistry[newFilePath] = DateTime.now();
+        });
+      }
+
+      _listFiles(_currentPath);
+      _saveRegistry();
+      _showMessage('Archivos copiados exitosamente.');
+      _selectedFiles.clear();
+    }
+  } catch (e) {
+    _showMessage('Error al copiar archivos: $e');
+  }
+}
+
   Future<void> _openFile(FileSystemEntity file) async {
     if (file is File) {
       final Uri fileUri = Uri.file(file.path);
@@ -383,6 +407,23 @@ ElevatedButton(
   ),
   child: const Text('Mover Archivos seleccionados'),
 ),
+ElevatedButton(
+  onPressed: _selectedFiles.isNotEmpty ? _copySelectedFiles : null,
+  style: ButtonStyle(
+    backgroundColor: MaterialStateProperty.all(
+      _selectedFiles.isNotEmpty
+          ? const Color.fromARGB(255, 76, 78, 175)
+          : Colors.grey,
+    ),
+    foregroundColor: MaterialStateProperty.all(
+      _selectedFiles.isNotEmpty ? Colors.white : Colors.black38,
+    ),
+    padding: MaterialStateProperty.all(
+      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+    ),
+  ),
+  child: const Text('Copiar Archivos seleccionados'),
+),
 
                 ElevatedButton(
                   onPressed: _createFolder,
@@ -476,5 +517,5 @@ void main() {
   runApp(MaterialApp(
     title: 'Explorador de Archivos',
     home: const Servidor(), // Correct class name
-  ));
+   ));
 }

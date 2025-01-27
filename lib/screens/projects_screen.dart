@@ -314,6 +314,30 @@ Future<void> _moveSelectedFiles() async {
   }
 }
 
+Future<void> _copySelectedFiles() async {
+  try {
+    final result = await FilePicker.platform.getDirectoryPath();
+    if (result != null) {
+      for (var filePath in _selectedFiles) {
+        final file = File(filePath);
+        final newFilePath = '$result${Platform.pathSeparator}${file.path.split(Platform.pathSeparator).last}';
+        file.copySync(newFilePath);
+
+        setState(() {
+          _fileRegistry[newFilePath] = DateTime.now();
+        });
+      }
+
+      _listFiles(_currentPath);
+      _saveRegistry();
+      _showMessage('Archivos copiados exitosamente.');
+      _selectedFiles.clear();
+    }
+  } catch (e) {
+    _showMessage('Error al copiar archivos: $e');
+  }
+}
+
 void _deleteFile(FileSystemEntity file) {
   showDialog(
     context: context,
@@ -362,6 +386,30 @@ void _performDeleteFile(FileSystemEntity file) {
   }
 }
 
+Future<void> _downloadProjectContent(String projectPath) async {
+  try {
+    final result = await FilePicker.platform.getDirectoryPath();
+    if (result != null) {
+      final directory = Directory(projectPath);
+      if (await directory.exists()) {
+        final files = directory.listSync(recursive: true);
+        for (var file in files) {
+          if (file is File) {
+            final newFilePath = '$result${Platform.pathSeparator}${file.path.split(Platform.pathSeparator).last}';
+            await file.copy(newFilePath);
+          }
+        }
+        _showMessage('Contenido del proyecto descargado exitosamente.');
+      } else {
+        _showMessage('El directorio del proyecto no existe.');
+      }
+    } else {
+      _showMessage('No se seleccionó una carpeta de destino.');
+    }
+  } catch (e) {
+    _showMessage('Error al descargar el contenido del proyecto: $e');
+  }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -434,9 +482,20 @@ void _performDeleteFile(FileSystemEntity file) {
                               _selectedProjectPath = project['path'];
                             });
                           },
-                          trailing: IconButton(
-                            icon: const Icon(Icons.delete, color: Color.fromARGB(255, 255, 17, 0)),
-                            onPressed: () => _deleteProject(index),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.download, color: Colors.green),
+                                onPressed: () => _downloadProjectContent(project['path'] ?? ''),
+                                tooltip: 'Descargar contenido del proyecto',
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.delete, color: Color.fromARGB(255, 255, 17, 0)),
+                                onPressed: () => _deleteProject(index),
+                                tooltip: 'Eliminar proyecto',
+                              ),
+                            ],
                           ),
                         ),
                       );
@@ -675,6 +734,23 @@ ElevatedButton(
     ),
   ),
   child: const Text('Mover Archivos seleccionados'),
+),
+ElevatedButton(
+  onPressed: _selectedFiles.isNotEmpty ? _copySelectedFiles : null,
+  style: ButtonStyle(
+    backgroundColor: MaterialStateProperty.all(
+      _selectedFiles.isNotEmpty
+          ? const Color.fromARGB(255, 76, 78, 175)
+          : Colors.grey,
+    ),
+    foregroundColor: MaterialStateProperty.all(
+      _selectedFiles.isNotEmpty ? Colors.white : Colors.black38,
+    ),
+    padding: MaterialStateProperty.all(
+      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+    ),
+  ),
+  child: const Text('Copiar Archivos seleccionados'),
 ),
 
                           ],

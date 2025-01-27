@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:jcrg/screens/theme_switcher.dart'; // No se elimina el import
 import 'package:intl/intl.dart';
 import 'package:flutter/services.dart';
+import 'package:jcrg/widgets/calendar_meetings.dart';
 
 class MeetingsScreen extends StatefulWidget {
   const MeetingsScreen({Key? key}) : super(key: key);
@@ -689,9 +690,16 @@ Widget build(BuildContext context) {
       actions: [
         ThemeSwitcher(),
         IconButton(
-          icon: const Icon(Icons.add, color: Colors.white),
-          onPressed: _showAddMeetingDialog,
-          tooltip: 'Agregar Reunión',
+          icon: const Icon(Icons.calendar_today, color: Colors.white),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => CalendarScreen(meetings: meetings),
+              ),
+            );
+          },
+          tooltip: 'Ver Calendario',
         ),
       ],
     ),
@@ -707,12 +715,42 @@ body: Padding(
       // Barra de búsqueda
       TextField(
         onChanged: _filterMeetings,
+        style: TextStyle(
+          color: Theme.of(context).brightness == Brightness.dark
+              ? Colors.white
+              : Colors.black,
+        ),
         decoration: InputDecoration(
           prefixIcon: const Icon(Icons.search),
           hintText: 'Buscar reunión',
+          hintStyle: TextStyle(
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.white54
+                : Colors.black54,
+          ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
-            borderSide: const BorderSide(color: Colors.grey),
+            borderSide: BorderSide(
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.grey
+                  : Colors.black45,
+            ),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: BorderSide(
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.grey
+                  : Colors.black45,
+            ),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: BorderSide(
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white
+                  : Colors.black,
+            ),
           ),
         ),
       ),
