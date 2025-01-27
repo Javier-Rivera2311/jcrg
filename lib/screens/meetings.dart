@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:jcrg/screens/theme_switcher.dart'; // No se elimina el import
 import 'package:intl/intl.dart';
 import 'package:flutter/services.dart';
-import 'package:jcrg/widgets/calendar_meetings.dart';
 
 class MeetingsScreen extends StatefulWidget {
   const MeetingsScreen({Key? key}) : super(key: key);
@@ -689,18 +688,7 @@ Widget build(BuildContext context) {
       ),
       actions: [
         ThemeSwitcher(),
-        IconButton(
-          icon: const Icon(Icons.calendar_today, color: Colors.white),
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => CalendarScreen(meetings: meetings),
-              ),
-            );
-          },
-          tooltip: 'Ver Calendario',
-        ),
+        // Remove the calendar button
       ],
     ),
 
