@@ -22,6 +22,14 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
   void _generateAppointments() {
     List<Appointment> appointments = [];
+    Map<String, Color> sectionColors = {
+      'Dibujantes': Colors.blue,
+      'Ingeniería': Colors.green,
+      'Administrativo': Colors.orange,
+      'Entregas': Colors.red,
+      'Revisión': Colors.purple,
+    };
+
     for (var priority in widget.tasks) {
       for (var task in priority['tasks']) {
         final startDate = DateTime.parse(task['dueDate']);
@@ -31,7 +39,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
             endTime: startDate.add(const Duration(hours: 1)),
             subject: task['title'],
             notes: task['assignee'],
-            color: Colors.blue,
+            color: sectionColors[priority['title']] ?? Colors.grey,
           ),
         );
       }
@@ -57,6 +65,34 @@ class _CalendarScreenState extends State<CalendarScreen> {
         monthViewSettings: const MonthViewSettings(
           appointmentDisplayMode: MonthAppointmentDisplayMode.appointment,
         ),
+        appointmentBuilder: (context, details) {
+          final Appointment appointment = details.appointments.first;
+          return Tooltip(
+            message: 'Tarea: ${appointment.subject}\nEncargado: ${appointment.notes}',
+            child: Container(
+              width: details.bounds.width,
+              height: details.bounds.height,
+              decoration: BoxDecoration(
+                color: appointment.color,
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Center(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    appointment.subject,
+                    style: const TextStyle(
+                      fontSize: 16, // Base font size
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }

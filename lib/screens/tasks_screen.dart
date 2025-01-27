@@ -5,7 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:jcrg/screens/theme_switcher.dart';
 import 'package:provider/provider.dart';
 import 'package:jcrg/widgets/theme_manager.dart';
-import 'package:jcrg/widgets/calendar.dart';
+import 'package:jcrg/widgets/calendar_task.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier(ThemeMode.system);
