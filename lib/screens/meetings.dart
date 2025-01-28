@@ -677,113 +677,16 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
   }
 
   Widget _buildCalendarView() {
-    return Column(
-      children: [
-        // Barra de leyenda de colores
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              _buildLegendItem('Presencial', Colors.green),
-              _buildLegendItem('Remoto', Colors.blue),
-            ],
-          ),
-        ),
-        Expanded(
-          child: SfCalendar(
-            view: CalendarView.month,
-            dataSource: MeetingDataSource(_generateAppointments()),
-            headerHeight: 50,
-            headerStyle: const CalendarHeaderStyle(
-              textAlign: TextAlign.center,
-              textStyle: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            showNavigationArrow: true,
-            monthViewSettings: const MonthViewSettings(
-              appointmentDisplayMode: MonthAppointmentDisplayMode.appointment,
-            ),
-            appointmentBuilder: (context, details) {
-              final Appointment appointment = details.appointments.first;
-              return Tooltip(
-                message: 'Reunión: ${appointment.subject}\nDetalles: ${appointment.notes}\nFecha: ${DateFormat.yMMMMd('es_ES').format(appointment.startTime)}',
-                child: Container(
-                  width: details.bounds.width,
-                  height: details.bounds.height,
-                  decoration: BoxDecoration(
-                    color: appointment.color,
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Center(
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Text(
-                        appointment.subject,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-  List<Appointment> _generateAppointments() {
-    Map<String, Color> meetingColors = {
-      'presencial': Colors.green,
-      'remoto': Colors.blue,
-    };
-
-    List<Appointment> appointments = [];
-    for (var meeting in meetings) {
-      final startDate = DateTime.parse(meeting['date']);
-      appointments.add(
-        Appointment(
-          startTime: startDate,
-          endTime: startDate.add(const Duration(hours: 1)),
-          subject: meeting['title'],
-          notes: meeting['location'] ?? meeting['url'],
-          color: meetingColors[meeting['type']] ?? Colors.grey,
-        ),
-      );
-    }
-    return appointments;
-  }
-
-  Widget _buildLegendItem(String text, Color color) {
-    return Row(
-      children: [
-        Container(
-          width: 12,
-          height: 12,
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-          ),
-        ),
-        const SizedBox(width: 4),
-        Text(text, style: const TextStyle(fontSize: 16)),
-      ],
-    );
+    return CalendarMeetingsScreen(meetings: meetings);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Lista de Reuniones', style: TextStyle(color: Colors.white)),
+        title: showCalendar
+            ? const Text('Calendario de Reuniones', style: TextStyle(color: Colors.white))
+            : const Text('Lista de Reuniones', style: TextStyle(color: Colors.white)),
         backgroundColor: const Color.fromARGB(255, 107, 135, 182),
         leading: showCalendar
             ? IconButton(
