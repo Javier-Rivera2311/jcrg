@@ -107,7 +107,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
               appointmentBuilder: (context, details) {
                 final Appointment appointment = details.appointments.first;
                 return Tooltip(
-                  message: 'Tarea: ${appointment.subject}\nEncargado: ${appointment.notes}',
+                  message: 'Tarea: ${appointment.subject}\nEncargado: ${appointment.notes}\nFecha límite: ${DateFormat.yMMMMd('es_Es').format(appointment.startTime)}',
                   child: Container(
                     width: details.bounds.width,
                     height: details.bounds.height,

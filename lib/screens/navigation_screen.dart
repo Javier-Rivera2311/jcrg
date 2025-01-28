@@ -56,7 +56,7 @@ class _NavigationScreenState extends State<NavigationScreen> {
         items: [
           PaneItem(
             icon: const Icon(FluentIcons.task_list),
-            title: const Text('Lista de tareas'),
+            title: const Text('Gestión de tareas'),
             body: TaskManagerApp(),
           ),
             PaneItem(
