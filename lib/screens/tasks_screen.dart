@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:async'; // Import the dart:async package
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:jcrg/screens/theme_switcher.dart';
@@ -108,51 +109,103 @@ class _TaskManagerScreenState extends State<TaskManagerScreen> {
 
       if (selectedPriority == null) return;
 
+      final taskTitle = _taskController.text;
+      final dueDate = _selectedDate;
+
       setState(() {
         selectedPriority['tasks'].add({
-          'title': _taskController.text,
+          'title': taskTitle,
           'status': 'Pendiente',
           'assignee': _assigneeController.text,
-          'dueDate': _selectedDate.toIso8601String(),
+          'dueDate': dueDate.toIso8601String(),
         });
         selectedPriority['tasks'].sort((a, b) => DateTime.parse(a['dueDate']).compareTo(DateTime.parse(b['dueDate']))); // Ordenar tareas por fecha
         _isAddingTask = false; // Ocultar el formulario después de añadir la tarea
       });
 
+      _saveTasks();
+      _showLocalNotification('Nueva Tarea Añadida', 'Tarea: $taskTitle');
+      _scheduleReminderNotification(taskTitle, dueDate);
       _taskController.clear();
       _assigneeController.clear();
-      _saveTasks();
-      _showLocalNotification('Nueva Tarea Añadida', 'Tarea: ${_taskController.text}');
     }
   }
 
   void _updateTask(
       int priorityIndex, int taskIndex, String title, String assignee, DateTime dueDate) {
+    final previousStatus = priorities[priorityIndex]['tasks'][taskIndex]['status'];
+
     setState(() {
       priorities[priorityIndex]['tasks'][taskIndex]['title'] = title;
       priorities[priorityIndex]['tasks'][taskIndex]['assignee'] = assignee;
       priorities[priorityIndex]['tasks'][taskIndex]['dueDate'] = dueDate.toIso8601String();
     });
+
     _saveTasks();
     _showLocalNotification('Tarea Actualizada', 'Tarea: $title');
+    _scheduleReminderNotification(title, dueDate);
+
+    final newStatus = priorities[priorityIndex]['tasks'][taskIndex]['status'];
+    if (newStatus == 'Completada' && previousStatus != 'Completada') {
+      _showLocalNotification('Tarea Completada', 'Tarea: $title ha sido completada.');
+    }
   }
 
   void _deleteTask(int priorityIndex, int taskIndex) {
+    final taskTitle = priorities[priorityIndex]['tasks'][taskIndex]['title'];
     setState(() {
       priorities[priorityIndex]['tasks'].removeAt(taskIndex);
     });
     _saveTasks();
-    _showLocalNotification('Tarea Eliminada', 'Una tarea ha sido eliminada.');
+    _showLocalNotification('Tarea Eliminada', 'Tarea: $taskTitle ha sido eliminada.');
   }
 
   void _showLocalNotification(String title, String message) {
-  LocalNotification notification = LocalNotification(
-    title: title,
-    body: message,
-    identifier: 'task_notification',
-  );
+    LocalNotification notification = LocalNotification(
+      title: title,
+      body: message,
+      identifier: 'task_notification',
+    );
     notification.show();
   }
+
+  void _scheduleReminderNotification(String title, DateTime dueDate) {
+  final reminderDate = dueDate.subtract(const Duration(days: 1));
+  final duration = reminderDate.difference(DateTime.now());
+  if (duration > Duration.zero) {
+    Timer(duration, () {
+      LocalNotification notification = LocalNotification(
+        title: 'Recordatorio de Tarea',
+        body: 'La tarea "$title" vence mañana.',
+        identifier: 'reminder_$title',
+      );
+      notification.show();
+    });
+  } else if (dueDate.isSameDate(DateTime.now())) {
+    // Programar notificaciones el mismo día de vencimiento
+    final now = DateTime.now();
+    final times = [
+      DateTime(now.year, now.month, now.day, 9, 0), // 9 AM
+      DateTime(now.year, now.month, now.day, 9, 30), // 9:30 AM
+      DateTime(now.year, now.month, now.day, 13, 0), // 1 PM
+      DateTime(now.year, now.month, now.day, 17, 0), // 5 PM
+    ];
+
+    for (var time in times) {
+      final duration = time.difference(now);
+      if (duration > Duration.zero) {
+        Timer(duration, () {
+          LocalNotification notification = LocalNotification(
+            title: 'Recordatorio de Tarea',
+            body: 'La tarea "$title" vence hoy.',
+            identifier: 'reminder_${time.hour}_${time.minute}',
+          );
+          notification.show();
+        });
+      }
+    }
+  }
+}
 
   Color _getStatusColor(String status) {
     switch (status) {
@@ -235,6 +288,23 @@ void _editTask(int priorityIndex, int taskIndex) {
                       style: const TextStyle(fontSize: 16, color: Colors.black),
                     ),
                   ),
+                ),
+                DropdownButton<String>(
+                  value: task['status'],
+                  onChanged: (newStatus) {
+                    setState(() {
+                      task['status'] = newStatus!;
+                    });
+                  },
+                  items: ['Pendiente', 'En progreso', 'Completada'].map((status) {
+                    return DropdownMenuItem(
+                      value: status,
+                      child: Text(
+                        status,
+                        style: TextStyle(color: _getStatusColor(status), fontSize: 16),
+                      ),
+                    );
+                  }).toList(),
                 ),
               ],
             ),
