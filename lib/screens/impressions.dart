@@ -126,7 +126,7 @@ class ImpressionsScreenState extends State<ImpressionsScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Gestión de Impresiones (EN DESARROLLO)',
+          'Gestión de Impresiones',
           style: TextStyle(color: Colors.white),
         ),
         backgroundColor: const Color.fromARGB(255, 107, 135, 182),

@@ -6,6 +6,7 @@ import 'package:jcrg/screens/projects_screen.dart';
 import 'package:jcrg/screens/impressions.dart';
 import 'package:jcrg/screens/meetings.dart';
 import 'package:jcrg/screens/servidor.dart';
+import 'package:jcrg/screens/help.dart';
 
 
 class NavigationScreen extends StatefulWidget {
@@ -96,6 +97,11 @@ class _NavigationScreenState extends State<NavigationScreen> {
             title: const Text('Contactos'),
             body: ContactManagerScreen(),
           ),
+          PaneItem(
+            icon: const Icon(FluentIcons.help),
+            title: const Text('Ayuda (en desarrollo)'),
+            body: HelpScreen(),
+          )
         ],
       ),
     );
