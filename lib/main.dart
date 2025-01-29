@@ -1,12 +1,17 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:provider/provider.dart';
 import 'package:window_manager/window_manager.dart'; // Import the window_manager package
+import 'package:local_notifier/local_notifier.dart'; // Import the local_notifier package
 import 'widgets/theme_manager.dart'; // Archivo para manejar el tema
 import 'screens/navigation_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await windowManager.ensureInitialized();
+  await localNotifier.setup(
+    appName: 'JCRG App',
+    shortcutPolicy: ShortcutPolicy.requireCreate,
+  );
 
   WindowOptions windowOptions = const WindowOptions(
     size: Size(1400, 600),

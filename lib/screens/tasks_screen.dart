@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:jcrg/widgets/theme_manager.dart';
 import 'package:jcrg/widgets/calendar_task.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:local_notifier/local_notifier.dart'; // Import the local_notifier package
 
 final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier(ThemeMode.system);
 
@@ -121,6 +122,7 @@ class _TaskManagerScreenState extends State<TaskManagerScreen> {
       _taskController.clear();
       _assigneeController.clear();
       _saveTasks();
+      _showLocalNotification('Nueva Tarea Añadida', 'Tarea: ${_taskController.text}');
     }
   }
 
@@ -132,6 +134,7 @@ class _TaskManagerScreenState extends State<TaskManagerScreen> {
       priorities[priorityIndex]['tasks'][taskIndex]['dueDate'] = dueDate.toIso8601String();
     });
     _saveTasks();
+    _showLocalNotification('Tarea Actualizada', 'Tarea: $title');
   }
 
   void _deleteTask(int priorityIndex, int taskIndex) {
@@ -139,6 +142,16 @@ class _TaskManagerScreenState extends State<TaskManagerScreen> {
       priorities[priorityIndex]['tasks'].removeAt(taskIndex);
     });
     _saveTasks();
+    _showLocalNotification('Tarea Eliminada', 'Una tarea ha sido eliminada.');
+  }
+
+  void _showLocalNotification(String title, String message) {
+  LocalNotification notification = LocalNotification(
+    title: title,
+    body: message,
+    identifier: 'task_notification',
+  );
+    notification.show();
   }
 
   Color _getStatusColor(String status) {
