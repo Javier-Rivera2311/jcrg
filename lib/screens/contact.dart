@@ -168,93 +168,89 @@ class _ContactManagerScreenState extends State<ContactManagerScreen> {
                       constraints: BoxConstraints(minWidth: constraints.maxWidth),
                       child: SingleChildScrollView(
                         scrollDirection: Axis.vertical, // Permite desplazamiento vertical
-                        child: FittedBox( // Ajusta la tabla al tamaño disponible
-                          alignment: Alignment.topLeft,
-                          child: DataTable(
-                            headingRowColor: MaterialStateProperty.resolveWith<Color>(
-                              (Set<MaterialState> states) =>
-                                  isDarkMode
-                                      ? const Color.fromARGB(255, 60, 60, 60)
-                                      : const Color.fromARGB(255, 230, 230, 230),
-                            ),
-                            columnSpacing: 16.0, // Espaciado más compacto para mejor ajuste
-                            horizontalMargin: 8.0,
-                            columns: const [
-                              DataColumn(label: Text('Nombre y Apellido', style: TextStyle(fontWeight: FontWeight.bold))),
-                              DataColumn(label: Text('Correo', style: TextStyle(fontWeight: FontWeight.bold))),
-                              DataColumn(label: Text('Teléfono', style: TextStyle(fontWeight: FontWeight.bold))),
-                              DataColumn(label: Text('Cargo', style: TextStyle(fontWeight: FontWeight.bold))),
-                              DataColumn(label: Text('Comuna', style: TextStyle(fontWeight: FontWeight.bold))),
-                              DataColumn(label: Text('Proyecto', style: TextStyle(fontWeight: FontWeight.bold))),
-                              DataColumn(label: Text('Editar', style: TextStyle(fontWeight: FontWeight.bold))),
-                              DataColumn(label: Text('Borrar', style: TextStyle(fontWeight: FontWeight.bold))),
-                            ],
-                            rows: filteredContacts.map((contact) {
-                              final index = _contacts.indexOf(contact);
-                              return DataRow(
-                                color: MaterialStateProperty.resolveWith<Color>(
-                                  (Set<MaterialState> states) =>
-                                      index % 2 == 0 ? (isDarkMode ? Colors.grey[800]! : Colors.grey[200]!) : (isDarkMode ? Colors.grey[700]! : Colors.white),
-                                ),
-                                cells: [
-                                  DataCell(Text(contact['name']!)),
-                                  DataCell(
-                                    Row(
-                                      children: [
-                                        Expanded(
-                                          child: Text(
-                                            contact['email']!,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                        IconButton(
-                                          icon: const Icon(Icons.copy, color: Colors.blue),
-                                          tooltip: 'Copiar correo',
-                                          onPressed: () {
-                                            Clipboard.setData(ClipboardData(text: contact['email']!));
-                                          },
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  DataCell(
-                                    Row(
-                                      children: [
-                                        Expanded(
-                                          child: Text(
-                                            contact['phone']!,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                        IconButton(
-                                          icon: const Icon(Icons.copy, color: Colors.blue),
-                                          tooltip: 'Copiar teléfono',
-                                          onPressed: () {
-                                            Clipboard.setData(ClipboardData(text: contact['phone']!));
-                                          },
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  DataCell(Text(contact['cargo']!)),
-                                  DataCell(Text(contact['comuna']!)),
-                                  DataCell(Text(contact['proyecto']!)),
-                                  DataCell(IconButton(
-                                    icon: const Icon(Icons.edit, color: Colors.blue),
-                                    tooltip: 'Editar contacto',
-                                    onPressed: () {
-                                      _showContactDialog(isEditing: true, index: index, contact: contact);
-                                    },
-                                  )),
-                                  DataCell(IconButton(
-                                    icon: const Icon(Icons.delete, color: Colors.red),
-                                    tooltip: 'Borrar contacto',
-                                    onPressed: () => _deleteContact(index),
-                                  )),
-                                ],
-                              );
-                            }).toList(),
+                        child: DataTable(
+                          columnSpacing: 10.0, // Ajuste del espacio entre columnas
+                          horizontalMargin: 8.0, // Márgenes más pequeños
+                          headingRowHeight: 40, // Altura más compacta para los títulos
+                          dataRowHeight: 40, // Altura más compacta para las filas
+                          headingRowColor: MaterialStateProperty.resolveWith<Color>(
+                            (Set<MaterialState> states) => Theme.of(context).brightness == Brightness.dark
+                                ? const Color.fromARGB(255, 60, 60, 60)
+                                : const Color.fromARGB(255, 230, 230, 230),
                           ),
+                          columns: const [
+                            DataColumn(label: Text('Nombre', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold))),
+                            DataColumn(label: Text('Correo', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold))),
+                            DataColumn(label: Text('Teléfono', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold))),
+                            DataColumn(label: Text('Cargo', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold))),
+                            DataColumn(label: Text('Comuna', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold))),
+                            DataColumn(label: Text('Proyecto', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold))),
+                            DataColumn(label: Text('Editar', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold))),
+                            DataColumn(label: Text('Borrar', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold))),
+                          ],
+                          rows: filteredContacts.map((contact) {
+                            final index = _contacts.indexOf(contact);
+                            return DataRow(
+                              cells: [
+                                DataCell(Text(contact['name']!, style: TextStyle(fontSize: 16), overflow: TextOverflow.ellipsis)),
+                                DataCell(
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          contact['email']!,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(fontSize: 16),
+                                        ),
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(Icons.copy, color: Colors.blue, size: 16),
+                                        tooltip: 'Copiar correo',
+                                        onPressed: () {
+                                          Clipboard.setData(ClipboardData(text: contact['email']!));
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                DataCell(
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          contact['phone']!,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(fontSize: 16),
+                                        ),
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(Icons.copy, color: Colors.blue, size: 16),
+                                        tooltip: 'Copiar teléfono',
+                                        onPressed: () {
+                                          Clipboard.setData(ClipboardData(text: contact['phone']!));
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                DataCell(Text(contact['cargo']!, style: TextStyle(fontSize: 16), overflow: TextOverflow.ellipsis)),
+                                DataCell(Text(contact['comuna']!, style: TextStyle(fontSize: 16), overflow: TextOverflow.ellipsis)),
+                                DataCell(Text(contact['proyecto']!, style: TextStyle(fontSize: 16), overflow: TextOverflow.ellipsis)),
+                                DataCell(IconButton(
+                                  icon: const Icon(Icons.edit, color: Colors.blue, size: 16),
+                                  tooltip: 'Editar contacto',
+                                  onPressed: () {
+                                    _showContactDialog(isEditing: true, index: index, contact: contact);
+                                  },
+                                )),
+                                DataCell(IconButton(
+                                  icon: const Icon(Icons.delete, color: Colors.red, size: 16),
+                                  tooltip: 'Borrar contacto',
+                                  onPressed: () => _deleteContact(index),
+                                )),
+                              ],
+                            );
+                          }).toList(),
                         ),
                       ),
                     ),
