@@ -86,7 +86,7 @@ class _NavigationScreenState extends State<NavigationScreen> {
               ),
               PaneItem(
                 icon: const Icon(FluentIcons.print),
-                title: const Text('Impresiones'),
+                title: const Text('Impresiones (en desarrollo)'),
                 body: ImpressionsScreen(),
               ),
             ],

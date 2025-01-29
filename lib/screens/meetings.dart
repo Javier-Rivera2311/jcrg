@@ -21,6 +21,7 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _locationController = TextEditingController();
   final TextEditingController _urlController = TextEditingController();
+  final TextEditingController _projectController = TextEditingController(); // Nuevo campo de proyecto
   DateTime _selectedDate = DateTime.now();
   TimeOfDay _selectedTime = TimeOfDay.now();
   String _meetingType = "remoto";
@@ -89,6 +90,7 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
     setState(() {
       final newMeeting = {
         'title': _titleController.text,
+        'project': _projectController.text, // Añadir campo de proyecto
         'date': _selectedDate.toIso8601String(),
         'time': _selectedTime.format(context),
         'type': _meetingType,
@@ -103,6 +105,7 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
     _titleController.clear();
     _locationController.clear();
     _urlController.clear();
+    _projectController.clear(); // Limpiar campo de proyecto
     _saveMeetings();
     Navigator.pop(context);
   }
@@ -118,6 +121,7 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
   void _editMeeting(int index) {
     final meeting = meetings[index];
     _titleController.text = meeting['title'] ?? '';
+    _projectController.text = meeting['project'] ?? ''; // Añadir campo de proyecto
     _selectedDate = DateTime.parse(meeting['date']);
     _selectedTime = TimeOfDay(
       hour: int.parse(meeting['time']?.split(':')[0] ?? '0'),
@@ -153,6 +157,20 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
                         labelText: 'Título de la reunión',
                         labelStyle:
                             TextStyle(color: isDarkMode ? Colors.white : Colors.black),
+                        border: const OutlineInputBorder(),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                              color: isDarkMode ? Colors.grey : Colors.black45),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: _projectController,
+                      style: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
+                      decoration: InputDecoration(
+                        labelText: 'Proyecto',
+                        labelStyle: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
                         border: const OutlineInputBorder(),
                         enabledBorder: OutlineInputBorder(
                           borderSide: BorderSide(
@@ -349,6 +367,7 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
                     setState(() {
                       meetings[index] = {
                         'title': _titleController.text,
+                        'project': _projectController.text, // Añadir campo de proyecto
                         'date': _selectedDate.toIso8601String(),
                         'time': _selectedTime.format(context),
                         'type': _meetingType,
@@ -381,6 +400,7 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
     if (index != null) {
       final meeting = meetings[index];
       _titleController.text = meeting['title'] ?? '';
+      _projectController.text = meeting['project'] ?? ''; // Añadir campo de proyecto
       _selectedDate = DateTime.parse(meeting['date']);
       _selectedTime = TimeOfDay(
         hour: int.parse(meeting['time']?.split(':')[0] ?? '0'),
@@ -388,10 +408,13 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
       );
       _meetingType = meeting['type'] ?? 'remoto';
       _locationController.text = meeting['location'] ?? '';
+      _urlController.text = meeting['url'] ?? '';
     } else {
       // Si es nueva reunión, limpia los valores
       _titleController.clear();
       _locationController.clear();
+      _urlController.clear();
+      _projectController.clear(); // Limpiar campo de proyecto
       _selectedDate = DateTime.now();
       _selectedTime = TimeOfDay.now();
       _meetingType = "remoto";
@@ -423,6 +446,20 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
                       style: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
                       decoration: InputDecoration(
                         labelText: 'Título de la reunión',
+                        labelStyle: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
+                        border: const OutlineInputBorder(),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                              color: isDarkMode ? Colors.grey : Colors.black45),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: _projectController,
+                      style: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
+                      decoration: InputDecoration(
+                        labelText: 'Proyecto',
                         labelStyle: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
                         border: const OutlineInputBorder(),
                         enabledBorder: OutlineInputBorder(
@@ -642,6 +679,7 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
                       setState(() {
                         meetings[index] = {
                           'title': _titleController.text,
+                          'project': _projectController.text, // Añadir campo de proyecto
                           'date': _selectedDate.toIso8601String(),
                           'time': _selectedTime.format(context),
                           'type': _meetingType,
@@ -803,6 +841,12 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
                       ),
                       DataColumn(
                         label: Text(
+                          'Proyecto',
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                        ),
+                      ),
+                      DataColumn(
+                        label: Text(
                           'Fecha',
                           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
                         ),
@@ -854,6 +898,12 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
                         cells: [
                           DataCell(Text(
                             meeting['title'] ?? 'Sin título',
+                            style: TextStyle(
+                                color: isDarkMode ? Colors.white : Colors.black,
+                                fontSize: 16),
+                          )),
+                          DataCell(Text(
+                            meeting['project'] ?? 'Sin proyecto',
                             style: TextStyle(
                                 color: isDarkMode ? Colors.white : Colors.black,
                                 fontSize: 16),
@@ -985,5 +1035,4 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
         ),
       ],
     );
-  }
-}
+  }}
