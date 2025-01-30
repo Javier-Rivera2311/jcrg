@@ -7,6 +7,8 @@ import 'package:jcrg/screens/impressions.dart';
 import 'package:jcrg/screens/meetings.dart';
 import 'package:jcrg/screens/servidor.dart';
 import 'package:jcrg/screens/help.dart';
+import 'package:jcrg/screens/send_notification.dart';
+
 
 
 class NavigationScreen extends StatefulWidget {
@@ -98,10 +100,15 @@ class _NavigationScreenState extends State<NavigationScreen> {
             body: ContactManagerScreen(),
           ),
           PaneItem(
+            icon: const Icon(FluentIcons.send),
+            title: const Text('Enviar notificación (en desarrollo)'),
+            body: SendNotificationScreen(),
+          ),
+          PaneItem(
             icon: const Icon(FluentIcons.help),
             title: const Text('Ayuda (en desarrollo)'),
             body: HelpScreen(),
-          )
+          ),
         ],
       ),
     );
