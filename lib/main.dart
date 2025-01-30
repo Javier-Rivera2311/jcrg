@@ -39,7 +39,7 @@ void main() async {
   startUDPListener();
 }
 
-/// **Escucha notificaciones UDP en el puerto 4545**
+/// Escucha notificaciones UDP en el puerto 4545
 void startUDPListener() async {
   RawDatagramSocket socket =
       await RawDatagramSocket.bind(InternetAddress.anyIPv4, 4545);
@@ -61,7 +61,7 @@ void startUDPListener() async {
   });
 }
 
-/// **Envía una notificación UDP a todos los dispositivos en la red**
+/// Envía una notificación UDP a todos los dispositivos en la red
 void sendUDPMessage(String message) async {
   final socket = await RawDatagramSocket.bind(InternetAddress.anyIPv4, 0);
   final data = utf8.encode(message);
@@ -71,7 +71,7 @@ void sendUDPMessage(String message) async {
   print('✅ Mensaje enviado: "$message"');
 }
 
-/// **Muestra la notificación en Windows con local_notifier**
+/// Muestra la notificación en Windows con local_notifier
 void showLocalNotification(String message) async {
   final notification = LocalNotification(
     title: '📢 Notificación UDP',

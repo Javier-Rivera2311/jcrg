@@ -1,11 +1,128 @@
 import 'package:flutter/material.dart';
 import 'package:jcrg/screens/theme_switcher.dart';
+import 'package:url_launcher/url_launcher.dart';
 
-class HelpScreen extends StatelessWidget {
+class HelpScreen extends StatefulWidget {
+  @override
+  _HelpScreenState createState() => _HelpScreenState();
+}
+
+class _HelpScreenState extends State<HelpScreen> {
+  final TextEditingController _messageController = TextEditingController();
+  final FocusNode _focusNode = FocusNode();
+  final ScrollController _scrollController = ScrollController();
+  final List<Map<String, String>> _messages = [
+    {
+      'sender': 'bot',
+      'message':
+          'Hola, ¿en qué te puedo ayudar? Puedes preguntar sobre: Gestión de Tareas, Enviar Notificaciones, Gestión de Contactos, Servidores, Gestión de Proyectos, Cambiar Tema.'
+    }
+  ];
+  String? _lastTopicAsked; // Almacena el último tema preguntado
+
+  void _sendMessage(String message) {
+    if (message.isEmpty) return;
+
+    setState(() {
+      _messages.add({'sender': 'user', 'message': message});
+      _messages.add({'sender': 'bot', 'message': _getBotResponse(message)});
+    });
+
+    _messageController.clear();
+    _focusNode.requestFocus(); // Mantener el foco en el TextField
+    _scrollToBottom(); // Desplazar automáticamente al final
+  }
+
+  void _scrollToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    });
+  }
+
+  String _getBotResponse(String message) {
+    String response;
+    if (message.toLowerCase().contains('tareas')) {
+      _lastTopicAsked = 'tareas';
+      response =
+          'Utiliza la sección de Gestión de Tareas para crear, editar y eliminar tareas. Puedes buscar tareas específicas utilizando la barra de búsqueda.';
+      response +=
+          '\n\n¿Necesitas más ayuda? (responde "sí" para obtener un enlace a un video de YouTube)';
+    } else if (message.toLowerCase().contains('notificaciones')) {
+      _lastTopicAsked = 'notificaciones';
+      response =
+          'En la sección de Enviar Notificaciones, puedes enviar mensajes a todos los dispositivos en la red local. Escribe tu mensaje y presiona "Enviar Notificación".';
+      response +=
+          '\n\n¿Necesitas más ayuda? (responde "sí" para obtener un enlace a un video de YouTube)';
+    } else if (message.toLowerCase().contains('contactos')) {
+      _lastTopicAsked = 'contactos';
+      response =
+          'En la sección de Gestión de Contactos, puedes añadir, editar y eliminar contactos. Utiliza la barra de búsqueda para encontrar contactos específicos rápidamente.';
+      response +=
+          '\n\n¿Necesitas más ayuda? (responde "sí" para obtener un enlace a un video de YouTube)';
+    } else if (message.toLowerCase().contains('servidores')) {
+      _lastTopicAsked = 'servidores';
+      response =
+          'En la sección de Servidores, puedes acceder a diferentes servidores para gestionar archivos y proyectos. Selecciona el servidor que deseas explorar.';
+      response +=
+          '\n\n¿Necesitas más ayuda? (responde "sí" para obtener un enlace a un video de YouTube)';
+    } else if (message.toLowerCase().contains('proyectos')) {
+      _lastTopicAsked = 'proyectos';
+      response =
+          'Utiliza la sección de Gestión de Proyectos para administrar tus proyectos. Puedes ver detalles del proyecto, reuniones y gestionar impresiones.';
+      response +=
+          '\n\n¿Necesitas más ayuda? (responde "sí" para obtener un enlace a un video de YouTube)';
+    } else if (message.toLowerCase().contains('tema')) {
+      _lastTopicAsked = 'tema';
+      response =
+          'Puedes cambiar entre el tema claro y oscuro utilizando el interruptor de tema en la esquina superior derecha de la aplicación.';
+      response +=
+          '\n\n¿Necesitas más ayuda? (responde "sí" para obtener un enlace a un video de YouTube)';
+    } else if (message.toLowerCase().contains('sí') ||
+        message.toLowerCase().contains('si')) {
+      response = _getYouTubeLinkForLastQuestion();
+    } else if (message.toLowerCase().contains('no')) {
+      response = 'Espero haberte ayudado. Si necesitas más ayuda, no dudes en consultarme. Puedes preguntar sobre: Gestión de Tareas, Enviar Notificaciones, Gestión de Contactos, Servidores, Gestión de Proyectos, Cambiar Tema.';
+    } else {
+      response =
+          'Lo siento, no entiendo tu pregunta. Por favor, intenta preguntar sobre tareas, notificaciones, contactos, servidores, proyectos o tema.';
+    }
+
+    return response;
+  }
+
+  String _getYouTubeLinkForLastQuestion() {
+    if (_lastTopicAsked == null) {
+      return 'Lo siento, no tengo un video para esa pregunta.';
+    }
+
+    switch (_lastTopicAsked) {
+      case 'tareas':
+        return 'Aquí tienes un enlace a un video de YouTube que podría ayudarte: https://www.youtube.com';
+      case 'notificaciones':
+        return 'Aquí tienes un enlace a un video de YouTube que podría ayudarte: https://www.youtube.com';
+      case 'contactos':
+        return 'Aquí tienes un enlace a un video de YouTube que podría ayudarte: https://www.youtube.com';
+      case 'servidores':
+        return 'Aquí tienes un enlace a un video de YouTube que podría ayudarte: https://www.youtube.com';
+      case 'proyectos':
+        return 'Aquí tienes un enlace a un video de YouTube que podría ayudarte: https://www.youtube.com';
+      case 'tema':
+        return 'Aquí tienes un enlace a un video de YouTube que podría ayudarte: https://www.youtube.com';
+      default:
+        return 'Lo siento, no tengo un video para esa pregunta.';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-        appBar: AppBar(
+      appBar: AppBar(
         title: const Text('Ayuda', style: TextStyle(color: Colors.white)),
         backgroundColor: const Color.fromARGB(255, 107, 135, 182),
         leading: Center(
@@ -20,12 +137,103 @@ class HelpScreen extends StatelessWidget {
           ThemeSwitcher(),
         ],
       ),
-      body: Center(
-        child: Text(
-          'Ayuda',
-          style: TextStyle(fontSize: 24),
-        ),
+      body: Column(
+        children: [
+          Expanded(
+            child: ListView.builder(
+              controller: _scrollController,
+              padding: const EdgeInsets.all(16.0),
+              itemCount: _messages.length,
+              itemBuilder: (context, index) {
+                final message = _messages[index];
+                final isUser = message['sender'] == 'user';
+                return Align(
+                  alignment:
+                      isUser ? Alignment.centerRight : Alignment.centerLeft,
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(vertical: 5),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: isUser ? Colors.blue : const Color.fromARGB(255, 75, 211, 82),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (!isUser) Icon(Icons.smart_toy, color: Colors.black),
+                        SizedBox(width: 8),
+                        Flexible(
+                          child: GestureDetector(
+                            onTap: () {
+                              if (message['message']!.contains('https://')) {
+                                final url = message['message']!.split(' ').last;
+                                _launchURL(url);
+                              }
+                            },
+                            child: Text(
+                              message['message']!,
+                              style: TextStyle(
+                                color: isUser ? Colors.white : const Color.fromARGB(255, 0, 0, 0),
+                                decoration: message['message']!.contains('https://')
+                                    ? TextDecoration.underline
+                                    : TextDecoration.none,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _messageController,
+                    focusNode: _focusNode,
+                    onSubmitted: _sendMessage,
+                    decoration: InputDecoration(
+                      hintText: 'Escribe tu mensaje...',
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: isDarkMode ? Colors.white : Colors.black,
+                        ),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: isDarkMode ? Colors.white : Colors.black,
+                        ),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 10),
+                IconButton(
+                  icon: Icon(Icons.send, color: Colors.blue),
+                  onPressed: () {
+                    _sendMessage(_messageController.text);
+                  },
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
+  }
+
+  void _launchURL(String url) async {
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      throw 'No se pudo abrir el enlace $url';
+    }
   }
 }

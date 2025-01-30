@@ -9,8 +9,6 @@ import 'package:jcrg/screens/servidor.dart';
 import 'package:jcrg/screens/help.dart';
 import 'package:jcrg/screens/send_notification.dart';
 
-
-
 class NavigationScreen extends StatefulWidget {
   final List<dynamic> tasks;
   const NavigationScreen({super.key, required this.tasks});
@@ -52,30 +50,46 @@ class _NavigationScreenState extends State<NavigationScreen> {
         selected: currentIndex,
         onChanged: (index) {
           setState(() {
-            currentIndex = index;
-            showSubMenu = false; // Ocultar el submenú al cambiar de vista principal
+            // Si el index es un PaneItemExpander, no lo selecciona automáticamente
+            if (index != currentIndex) {
+              currentIndex = index;
+            }
+            showSubMenu = false; // Ocultar submenú si es necesario
           });
         },
+
         items: [
           PaneItem(
             icon: const Icon(FluentIcons.task_list),
             title: const Text('Gestión de tareas'),
             body: TaskManagerApp(),
           ),
-            PaneItem(
-              icon: const Icon(FluentIcons.cloud),
-              title: const Text('Servidor'),
-              body: Servidor(),
-          ),
           PaneItem(
+            icon: const Icon(FluentIcons.send),
+            title: const Text('Enviar notificación'),
+            body: SendNotificationScreen(),
+          ),
+          PaneItemExpander(
             icon: const Icon(FluentIcons.cloud),
-            title: const Text('Servidor B'),
-            body: FileExplorer(),
+            title: const Text('Servidores'),
+            body: Servidor(), // Add a default body for the expander
+            items: [
+              PaneItem(
+                icon: const Icon(FluentIcons.cloud),
+                title: const Text('Servidor'),
+                body: Servidor(),
+              ),
+              PaneItem(
+                icon: const Icon(FluentIcons.cloud),
+                title: const Text('Servidor B'),
+                body: FileExplorer(),
+              ),
+            ],
           ),
           PaneItemExpander(
             icon: const Icon(FluentIcons.project_management),
             title: const Text('Gestión de Proyectos'),
-            body: const ProjectManager(),
+            body: ProjectManager(), // Add a default body for the expander
             items: [
               PaneItem(
                 icon: const Icon(FluentIcons.project_document),
@@ -99,11 +113,8 @@ class _NavigationScreenState extends State<NavigationScreen> {
             title: const Text('Contactos'),
             body: ContactManagerScreen(),
           ),
-          PaneItem(
-            icon: const Icon(FluentIcons.send),
-            title: const Text('Enviar notificación (en desarrollo)'),
-            body: SendNotificationScreen(),
-          ),
+        ],
+        footerItems: [
           PaneItem(
             icon: const Icon(FluentIcons.help),
             title: const Text('Ayuda (en desarrollo)'),
