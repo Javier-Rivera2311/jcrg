@@ -395,8 +395,16 @@ Future<void> _downloadProjectContent(String projectPath) async {
         final files = directory.listSync(recursive: true);
         for (var file in files) {
           if (file is File) {
-            final newFilePath = '$result${Platform.pathSeparator}${file.path.split(Platform.pathSeparator).last}';
+            final relativePath = file.path.replaceFirst(directory.path, '');
+            final newFilePath = '$result$relativePath';
+            final newFile = File(newFilePath);
+            await newFile.create(recursive: true);
             await file.copy(newFilePath);
+          } else if (file is Directory) {
+            final relativePath = file.path.replaceFirst(directory.path, '');
+            final newDirPath = '$result$relativePath';
+            final newDir = Directory(newDirPath);
+            await newDir.create(recursive: true);
           }
         }
         _showMessage('Contenido del proyecto descargado exitosamente.');
