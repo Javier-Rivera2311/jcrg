@@ -48,7 +48,7 @@ class _HelpScreenState extends State<HelpScreen> {
     if (message.toLowerCase().contains('tareas')) {
       _lastTopicAsked = 'tareas';
       response =
-          'Utiliza la sección de Gestión de Tareas para crear, editar y eliminar tareas. Puedes buscar tareas específicas utilizando la barra de búsqueda.';
+          'Utiliza la sección de Gestión de Tareas para crear, editar y eliminar tareas. Puedes buscar tareas específicas utilizando la barra de búsqueda.\n\n  Para añadir una nueva tarea encontraras un boton en la parte inferior de la pantalla, con este boton se abrira un formulario en el cual. \n  podras agregar la tarea a una seccion determinada dentro de las opciones, agregar un titulo, el o los encargados ademas de la fecha limite de la tarea.\n  Puedes marcar una tarea como completada, en proceso o pendiente.\n  También puedes asignar una tarea a una o más personas y establecer una fecha de vencimiento.';
       response +=
           '\n\n¿Necesitas más ayuda? (responde "sí" para obtener un enlace a un video de YouTube)';
     } else if (message.toLowerCase().contains('notificaciones')) {
