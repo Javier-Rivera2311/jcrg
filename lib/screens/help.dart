@@ -15,7 +15,7 @@ class _HelpScreenState extends State<HelpScreen> {
     {
       'sender': 'bot',
       'message':
-          'Hola, ¿en qué te puedo ayudar? Puedes preguntar sobre: Gestión de Tareas, Enviar Notificaciones, Gestión de Contactos, Servidores, Gestión de Proyectos, Cambiar Tema.'
+          'Hola, ¿en qué te puedo ayudar? Puedes preguntar sobre: \n  ·Gestión de Tareas.\n  ·Enviar Notificaciones.\n  ·Gestión de Contactos.\n  ·Servidores.\n  ·Gestión de Proyectos.\n  ·Cambiar Tema.'
     }
   ];
   String? _lastTopicAsked; // Almacena el último tema preguntado
@@ -101,17 +101,17 @@ class _HelpScreenState extends State<HelpScreen> {
 
     switch (_lastTopicAsked) {
       case 'tareas':
-        return 'Aquí tienes un enlace a un video de YouTube que podría ayudarte: https://www.youtube.com';
+        return 'Aquí tienes un enlace a un video de YouTube que podría ayudarte:\n https://www.youtube.com/watch?v=video_tareas';
       case 'notificaciones':
-        return 'Aquí tienes un enlace a un video de YouTube que podría ayudarte: https://www.youtube.com';
+        return 'Aquí tienes un enlace a un video de YouTube que podría ayudarte:\n https://www.youtube.com/watch?v=video_notificaciones';
       case 'contactos':
-        return 'Aquí tienes un enlace a un video de YouTube que podría ayudarte: https://www.youtube.com';
+        return 'Aquí tienes un enlace a un video de YouTube que podría ayudarte:\n https://www.youtube.com/watch?v=video_contactos';
       case 'servidores':
-        return 'Aquí tienes un enlace a un video de YouTube que podría ayudarte: https://www.youtube.com';
+        return 'Aquí tienes un enlace a un video de YouTube que podría ayudarte:\n https://www.youtube.com/watch?v=video_servidores';
       case 'proyectos':
-        return 'Aquí tienes un enlace a un video de YouTube que podría ayudarte: https://www.youtube.com';
+        return 'Aquí tienes un enlace a un video de YouTube que podría ayudarte:\n https://www.youtube.com/watch?v=video_proyectos';
       case 'tema':
-        return 'Aquí tienes un enlace a un video de YouTube que podría ayudarte: https://www.youtube.com';
+        return 'Aquí tienes un enlace a un video de YouTube que podría ayudarte:\n https://www.youtube.com/watch?v=video_tema';
       default:
         return 'Lo siento, no tengo un video para esa pregunta.';
     }
@@ -154,8 +154,8 @@ class _HelpScreenState extends State<HelpScreen> {
                     margin: const EdgeInsets.symmetric(vertical: 5),
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: isUser ? Colors.blue : const Color.fromARGB(255, 75, 211, 82),
-                      borderRadius: BorderRadius.circular(8),
+                      color: isUser ? Colors.blue : const Color.fromARGB(255, 95, 236, 102),
+                      borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -190,42 +190,73 @@ class _HelpScreenState extends State<HelpScreen> {
           ),
           Padding(
             padding: const EdgeInsets.all(16.0),
-            child: Row(
+            child: Column(
               children: [
-                Expanded(
-                  child: TextField(
-                    controller: _messageController,
-                    focusNode: _focusNode,
-                    onSubmitted: _sendMessage,
-                    decoration: InputDecoration(
-                      hintText: 'Escribe tu mensaje...',
-                      border: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: isDarkMode ? Colors.white : Colors.black,
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _messageController,
+                        focusNode: _focusNode,
+                        onSubmitted: _sendMessage,
+                        decoration: InputDecoration(
+                          hintText: 'Escribe tu mensaje...',
+                          border: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: isDarkMode ? Colors.white : Colors.black,
+                            ),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: isDarkMode ? Colors.white : Colors.black,
+                            ),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
                         ),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: isDarkMode ? Colors.white : Colors.black,
-                        ),
-                        borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                  ),
+                    SizedBox(width: 10),
+                    IconButton(
+                      icon: Icon(Icons.send, color: Colors.blue),
+                      onPressed: () {
+                        _sendMessage(_messageController.text);
+                      },
+                    ),
+                  ],
                 ),
-                SizedBox(width: 10),
-                IconButton(
-                  icon: Icon(Icons.send, color: Colors.blue),
-                  onPressed: () {
-                    _sendMessage(_messageController.text);
-                  },
+                SizedBox(height: 10),
+                Wrap(
+                  spacing: 10,
+                  children: [
+                    _buildOptionChip('Gestión de Tareas', isDarkMode),
+                    _buildOptionChip('Enviar Notificaciones', isDarkMode),
+                    _buildOptionChip('Gestión de Contactos', isDarkMode),
+                    _buildOptionChip('Servidores', isDarkMode),
+                    _buildOptionChip('Gestión de Proyectos', isDarkMode),
+                    _buildOptionChip('Cambiar Tema', isDarkMode),
+                  ],
                 ),
               ],
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildOptionChip(String label, bool isDarkMode) {
+    return ActionChip(
+      label: Text(label),
+      backgroundColor: isDarkMode ? Colors.grey[800] : Colors.grey[200],
+      shape: StadiumBorder(
+        side: BorderSide(
+          color: isDarkMode ? Colors.white : Colors.black,
+        ),
+      ),
+      onPressed: () {
+        _sendMessage(label);
+      },
     );
   }
 
