@@ -319,9 +319,16 @@ Future<void> _copySelectedFiles() async {
     final result = await FilePicker.platform.getDirectoryPath();
     if (result != null) {
       for (var filePath in _selectedFiles) {
-        final file = File(filePath);
+        final file = FileSystemEntity.typeSync(filePath) == FileSystemEntityType.directory
+            ? Directory(filePath)
+            : File(filePath);
         final newFilePath = '$result${Platform.pathSeparator}${file.path.split(Platform.pathSeparator).last}';
-        file.copySync(newFilePath);
+
+        if (file is File) {
+          file.copySync(newFilePath);
+        } else if (file is Directory) {
+          _copyDirectory(file, Directory(newFilePath));
+        }
 
         setState(() {
           _fileRegistry[newFilePath] = DateTime.now();
@@ -336,6 +343,21 @@ Future<void> _copySelectedFiles() async {
   } catch (e) {
     _showMessage('Error al copiar archivos: $e');
   }
+}
+
+void _copyDirectory(Directory source, Directory destination) {
+  if (!destination.existsSync()) {
+    destination.createSync(recursive: true);
+  }
+  source.listSync(recursive: false).forEach((entity) {
+    if (entity is Directory) {
+      final newDirectory = Directory('${destination.path}${Platform.pathSeparator}${entity.path.split(Platform.pathSeparator).last}');
+      _copyDirectory(entity, newDirectory);
+    } else if (entity is File) {
+      final newFile = File('${destination.path}${Platform.pathSeparator}${entity.path.split(Platform.pathSeparator).last}');
+      entity.copySync(newFile.path);
+    }
+  });
 }
 
 void _deleteFile(FileSystemEntity file) {
