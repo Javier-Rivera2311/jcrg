@@ -9,6 +9,7 @@ import 'package:jcrg/widgets/theme_manager.dart';
 import 'package:jcrg/widgets/calendar_task.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:local_notifier/local_notifier.dart'; // Import the local_notifier package
+import 'package:jcrg/widgets/history_task.dart'; // Import the history_task.dart file
 
 final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier(ThemeMode.system);
 
@@ -63,17 +64,23 @@ extension DateTimeExtension on DateTime {
 
 class _TaskManagerScreenState extends State<TaskManagerScreen> {
   final String filePath = r'\\desktop-co5hnd9\SERVIDOR B\Informatica\flutter\tareas\tasks.json';
+  final String historyFilePath = r'\\desktop-co5hnd9\SERVIDOR B\Informatica\flutter\tareas\history.json';
   List<dynamic> priorities = [];
+  List<dynamic> filteredPriorities = [];
+  List<dynamic> taskHistory = [];
   final TextEditingController _taskController = TextEditingController();
   final TextEditingController _assigneeController = TextEditingController();
+  final TextEditingController _searchController = TextEditingController();
   String _selectedPriority = "Dibujantes";
   DateTime _selectedDate = DateTime.now();
   bool _isAddingTask = false; // Controla la visibilidad del formulario de añadir tarea
+  Map<String, bool> _expandedSections = {}; // Controla las secciones expandidas
 
   @override
   void initState() {
     super.initState();
     _loadTasks();
+    _loadTaskHistory();
   }
 
   Future<void> _loadTasks() async {
@@ -83,10 +90,26 @@ class _TaskManagerScreenState extends State<TaskManagerScreen> {
         final content = await file.readAsString();
         setState(() {
           priorities = json.decode(content);
+          filteredPriorities = priorities;
+          _sortTasksByDueDate();
         });
       }
     } catch (e) {
       print('Error al leer el archivo: $e');
+    }
+  }
+
+  Future<void> _loadTaskHistory() async {
+    try {
+      final file = File(historyFilePath);
+      if (await file.exists()) {
+        final content = await file.readAsString();
+        setState(() {
+          taskHistory = json.decode(content);
+        });
+      }
+    } catch (e) {
+      print('Error al leer el archivo de historial: $e');
     }
   }
 
@@ -97,6 +120,22 @@ class _TaskManagerScreenState extends State<TaskManagerScreen> {
       await file.writeAsString(content);
     } catch (e) {
       print('Error al guardar tareas: $e');
+    }
+  }
+
+  Future<void> _saveTaskHistory() async {
+    try {
+      final file = File(historyFilePath);
+      final content = json.encode(taskHistory);
+      await file.writeAsString(content);
+    } catch (e) {
+      print('Error al guardar historial de tareas: $e');
+    }
+  }
+
+  void _sortTasksByDueDate() {
+    for (var priority in priorities) {
+      priority['tasks'].sort((a, b) => DateTime.parse(a['dueDate']).compareTo(DateTime.parse(b['dueDate'])));
     }
   }
 
@@ -113,17 +152,20 @@ class _TaskManagerScreenState extends State<TaskManagerScreen> {
       final dueDate = _selectedDate;
 
       setState(() {
-        selectedPriority['tasks'].add({
+        final newTask = {
           'title': taskTitle,
           'status': 'Pendiente',
           'assignee': _assigneeController.text,
           'dueDate': dueDate.toIso8601String(),
-        });
+        };
+        selectedPriority['tasks'].add(newTask);
         selectedPriority['tasks'].sort((a, b) => DateTime.parse(a['dueDate']).compareTo(DateTime.parse(b['dueDate']))); // Ordenar tareas por fecha
         _isAddingTask = false; // Ocultar el formulario después de añadir la tarea
+        taskHistory.add(newTask); // Agregar la tarea al historial
       });
 
       _saveTasks();
+      _saveTaskHistory();
       _showLocalNotification('Nueva Tarea Añadida', 'Tarea: $taskTitle');
       _scheduleReminderNotification(taskTitle, dueDate);
       _taskController.clear();
@@ -170,42 +212,42 @@ class _TaskManagerScreenState extends State<TaskManagerScreen> {
   }
 
   void _scheduleReminderNotification(String title, DateTime dueDate) {
-  final reminderDate = dueDate.subtract(const Duration(days: 1));
-  final duration = reminderDate.difference(DateTime.now());
-  if (duration > Duration.zero) {
-    Timer(duration, () {
-      LocalNotification notification = LocalNotification(
-        title: 'Recordatorio de Tarea',
-        body: 'La tarea "$title" vence mañana.',
-        identifier: 'reminder_$title',
-      );
-      notification.show();
-    });
-  } else if (dueDate.isSameDate(DateTime.now())) {
-    // Programar notificaciones el mismo día de vencimiento
-    final now = DateTime.now();
-    final times = [
-      DateTime(now.year, now.month, now.day, 9, 0), // 9 AM
-      DateTime(now.year, now.month, now.day, 9, 30), // 9:30 AM
-      DateTime(now.year, now.month, now.day, 13, 0), // 1 PM
-      DateTime(now.year, now.month, now.day, 17, 0), // 5 PM
-    ];
+    final reminderDate = dueDate.subtract(const Duration(days: 1));
+    final duration = reminderDate.difference(DateTime.now());
+    if (duration > Duration.zero) {
+      Timer(duration, () {
+        LocalNotification notification = LocalNotification(
+          title: 'Recordatorio de Tarea',
+          body: 'La tarea "$title" vence mañana.',
+          identifier: 'reminder_$title',
+        );
+        notification.show();
+      });
+    } else if (dueDate.isSameDate(DateTime.now())) {
+      // Programar notificaciones el mismo día de vencimiento
+      final now = DateTime.now();
+      final times = [
+        DateTime(now.year, now.month, now.day, 9, 0), // 9 AM
+        DateTime(now.year, now.month, now.day, 9, 30), // 9:30 AM
+        DateTime(now.year, now.month, now.day, 13, 0), // 1 PM
+        DateTime(now.year, now.month, now.day, 17, 0), // 5 PM
+      ];
 
-    for (var time in times) {
-      final duration = time.difference(now);
-      if (duration > Duration.zero) {
-        Timer(duration, () {
-          LocalNotification notification = LocalNotification(
-            title: 'Recordatorio de Tarea',
-            body: 'La tarea "$title" vence hoy.',
-            identifier: 'reminder_${time.hour}_${time.minute}',
-          );
-          notification.show();
-        });
+      for (var time in times) {
+        final duration = time.difference(now);
+        if (duration > Duration.zero) {
+          Timer(duration, () {
+            LocalNotification notification = LocalNotification(
+              title: 'Recordatorio de Tarea',
+              body: 'La tarea "$title" vence hoy.',
+              identifier: 'reminder_${time.hour}_${time.minute}',
+            );
+            notification.show();
+          });
+        }
       }
     }
   }
-}
 
   Color _getStatusColor(String status) {
     switch (status) {
@@ -232,266 +274,332 @@ class _TaskManagerScreenState extends State<TaskManagerScreen> {
     }
   }
 
-void _editTask(int priorityIndex, int taskIndex) {
-  final task = priorities[priorityIndex]['tasks'][taskIndex];
-  final TextEditingController editTaskController =
-      TextEditingController(text: task['title']);
-  final TextEditingController editAssigneeController =
-      TextEditingController(text: task['assignee']);
-  DateTime editDate = task['dueDate'] != null
-      ? DateTime.parse(task['dueDate'])
-      : DateTime.now(); // Usa la fecha actual si no existe dueDate
+  void _editTask(int priorityIndex, int taskIndex) {
+    final task = priorities[priorityIndex]['tasks'][taskIndex];
+    final TextEditingController editTaskController =
+        TextEditingController(text: task['title']);
+    final TextEditingController editAssigneeController =
+        TextEditingController(text: task['assignee']);
+    DateTime editDate = task['dueDate'] != null
+        ? DateTime.parse(task['dueDate'])
+        : DateTime.now(); // Usa la fecha actual si no existe dueDate
 
-  showDialog(
-    context: context,
-    builder: (context) {
-      return StatefulBuilder(
-        builder: (context, setState) {
-          return AlertDialog(
-            title: const Text('Editar Tarea'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: editTaskController,
-                  decoration: const InputDecoration(labelText: 'Título de la tarea'),
-                ),
-                const SizedBox(height: 8),
-                TextField(
-                  controller: editAssigneeController,
-                  decoration: const InputDecoration(labelText: 'Encargado(a)'),
-                ),
-                const SizedBox(height: 8),
-                GestureDetector(
-                  onTap: () async {
-                    final DateTime? pickedDate = await showDatePicker(
-                      context: context,
-                      initialDate: editDate,
-                      firstDate: DateTime(2000),
-                      lastDate: DateTime(2100),
-                    );
-                    if (pickedDate != null) {
-                      setState(() {
-                        editDate = pickedDate; // Actualiza la fecha seleccionada
-                      });
-                    }
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                    decoration: BoxDecoration(
-                      color: const Color.fromARGB(255, 255, 255, 255),
-                      border: Border.all(color: Colors.grey[400]!),
-                      borderRadius: BorderRadius.circular(5),
-                    ),
-                    child: Text(
-                      'Fecha límite: ${_formatDate(editDate)}',
-                      style: const TextStyle(fontSize: 16, color: Colors.black),
-                    ),
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text('Editar Tarea'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: editTaskController,
+                    decoration: const InputDecoration(labelText: 'Título de la tarea'),
                   ),
-                ),
-                DropdownButton<String>(
-                  value: task['status'],
-                  onChanged: (newStatus) {
-                    setState(() {
-                      task['status'] = newStatus!;
-                    });
-                  },
-                  items: ['Pendiente', 'En progreso', 'Completada'].map((status) {
-                    return DropdownMenuItem(
-                      value: status,
-                      child: Text(
-                        status,
-                        style: TextStyle(color: _getStatusColor(status), fontSize: 16),
-                      ),
-                    );
-                  }).toList(),
-                ),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Cancelar'),
-              ),
-              TextButton(
-                onPressed: () {
-                  _updateTask(
-                    priorityIndex,
-                    taskIndex,
-                    editTaskController.text,
-                    editAssigneeController.text,
-                    editDate, // Usa la fecha actualizada
-                  );
-                  Navigator.pop(context);
-                },
-                child: const Text('Guardar'),
-              ),
-            ],
-          );
-        },
-      );
-    },
-  );
-}
-
-String _formatDate(DateTime date) {
-  return DateFormat('dd-MM-yyyy').format(date); // Formato día-mes-año
-}
-
-Color _getDueDateColor(DateTime dueDate) {
-  final now = DateTime.now();
-  if (dueDate.isBefore(now)) {
-    return const Color.fromARGB(255, 204, 14, 0); // Atrasado
-  } else if (dueDate.isSameDate(now)) {
-    return const Color.fromARGB(255, 255, 165, 0); // Mismo día (naranja)
-  } else {
-    return Colors.blue; // Tiene tiempo
-  }
-}
-
-void _showAddTaskDialog() {
-  showDialog(
-    context: context,
-    builder: (context) {
-      final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-      return StatefulBuilder(
-        builder: (context, setState) {
-          return AlertDialog(
-            backgroundColor: isDarkMode
-                ? const Color.fromARGB(255, 40, 40, 40)
-                : Colors.white,
-            title: Text(
-              'Añadir Tarea',
-              style: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
-            ),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                DropdownButton<String>(
-                  value: _selectedPriority,
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedPriority = value!;
-                    });
-                  },
-                  items: priorities.map<DropdownMenuItem<String>>((priority) {
-                    return DropdownMenuItem(
-                      value: priority['title'],
-                      child: Text(priority['title']),
-                    );
-                  }).toList(),
-                ),
-                const SizedBox(height: 8),
-                TextField(
-                  controller: _taskController,
-                  decoration: InputDecoration(
-                    labelText: 'Título de la tarea',
-                    border: const OutlineInputBorder(),
-                    labelStyle: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: editAssigneeController,
+                    decoration: const InputDecoration(labelText: 'Encargado(a)'),
                   ),
-                ),
-                const SizedBox(height: 8),
-                TextField(
-                  controller: _assigneeController,
-                  decoration: InputDecoration(
-                    labelText: 'Encargado',
-                    border: const OutlineInputBorder(),
-                    labelStyle: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Fecha límite: ${_formatDate(_selectedDate)}',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: _getDueDateColor(_selectedDate),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    IconButton(
-                      icon: const Icon(Icons.calendar_today),
-                      onPressed: () {
-                        _pickDate(context, (pickedDate) {
-                          setState(() {
-                            _selectedDate = pickedDate;
-                          });
+                  const SizedBox(height: 8),
+                  GestureDetector(
+                    onTap: () async {
+                      final DateTime? pickedDate = await showDatePicker(
+                        context: context,
+                        initialDate: editDate,
+                        firstDate: DateTime(2000),
+                        lastDate: DateTime(2100),
+                      );
+                      if (pickedDate != null) {
+                        setState(() {
+                          editDate = pickedDate; // Actualiza la fecha seleccionada
                         });
-                      },
+                      }
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                      decoration: BoxDecoration(
+                        color: const Color.fromARGB(255, 255, 255, 255),
+                        border: Border.all(color: Colors.grey[400]!),
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      child: Text(
+                        'Fecha límite: ${_formatDate(editDate)}',
+                        style: const TextStyle(fontSize: 16, color: Colors.black),
+                      ),
                     ),
-                  ],
+                  ),
+                  DropdownButton<String>(
+                    value: task['status'],
+                    onChanged: (newStatus) {
+                      setState(() {
+                        task['status'] = newStatus!;
+                      });
+                    },
+                    items: ['Pendiente', 'En progreso', 'Completada'].map((status) {
+                      return DropdownMenuItem(
+                        value: status,
+                        child: Text(
+                          status,
+                          style: TextStyle(color: _getStatusColor(status), fontSize: 16),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Cancelar'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    _updateTask(
+                      priorityIndex,
+                      taskIndex,
+                      editTaskController.text,
+                      editAssigneeController.text,
+                      editDate, // Usa la fecha actualizada
+                    );
+                    Navigator.pop(context);
+                  },
+                  child: const Text('Guardar'),
                 ),
               ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  _taskController.clear();
-                  _assigneeController.clear();
-                },
-                child: Text(
-                  'Cancelar',
-                  style: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
-                ),
-              ),
-              TextButton(
-                onPressed: () {
-                  _addTask();
-                  Navigator.pop(context);
-                },
-                child: Text(
-                  'Guardar',
-                  style: TextStyle(color: isDarkMode ? Colors.blue : Colors.blue),
-                ),
-              ),
-            ],
-          );
-        },
-      );
-    },
-  );
-}
-
-@override
-Widget build(BuildContext context) {
-  final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-
-  return Scaffold(
-    appBar: AppBar(
-      title: const Text('Gestión de Tareas', style: TextStyle(color: Colors.white, fontSize: 22)),
-      backgroundColor: const Color.fromARGB(255, 107, 135, 182),
-      leading: Center(
-          child: Image.asset(
-            'lib/assets/Log/LOGO.png', // Asegúrate de que esta ruta sea correcta
-            height: 75,
-            width: 75,
-            fit: BoxFit.contain, // Ajusta la imagen si es necesario
-          ),
-      ),
-      actions: [
-        ThemeSwitcher(),
-       IconButton(
-          icon: const Icon(Icons.calendar_today),
-          color: Colors.white,  // Ícono de calendario
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => CalendarScreen(tasks: priorities),
-              ),
             );
           },
-          tooltip: 'Ver Calendario',
+        );
+      },
+    );
+  }
+
+  String _formatDate(DateTime date) {
+    return DateFormat('dd-MM-yyyy').format(date); // Formato día-mes-año
+  }
+
+  Color _getDueDateColor(DateTime dueDate) {
+    final now = DateTime.now();
+    if (dueDate.isBefore(now)) {
+      return const Color.fromARGB(255, 204, 14, 0); // Atrasado
+    } else if (dueDate.isSameDate(now)) {
+      return const Color.fromARGB(255, 255, 165, 0); // Mismo día (naranja)
+    } else {
+      return Colors.blue; // Tiene tiempo
+    }
+  }
+
+  void _showAddTaskDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              backgroundColor: isDarkMode
+                  ? const Color.fromARGB(255, 40, 40, 40)
+                  : Colors.white,
+              title: Text(
+                'Añadir Tarea',
+                style: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  DropdownButton<String>(
+                    value: _selectedPriority,
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedPriority = value!;
+                      });
+                    },
+                    items: priorities.map<DropdownMenuItem<String>>((priority) {
+                      return DropdownMenuItem(
+                        value: priority['title'],
+                        child: Text(priority['title']),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: _taskController,
+                    decoration: InputDecoration(
+                      labelText: 'Título de la tarea',
+                      border: const OutlineInputBorder(),
+                      labelStyle: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: _assigneeController,
+                    decoration: InputDecoration(
+                      labelText: 'Encargado',
+                      border: const OutlineInputBorder(),
+                      labelStyle: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Fecha límite: ${_formatDate(_selectedDate)}',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: _getDueDateColor(_selectedDate),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      IconButton(
+                        icon: const Icon(Icons.calendar_today),
+                        onPressed: () {
+                          _pickDate(context, (pickedDate) {
+                            setState(() {
+                              _selectedDate = pickedDate;
+                            });
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    _taskController.clear();
+                    _assigneeController.clear();
+                  },
+                  child: Text(
+                    'Cancelar',
+                    style: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () {
+                    _addTask();
+                    Navigator.pop(context);
+                  },
+                  child: Text(
+                    'Guardar',
+                    style: TextStyle(color: isDarkMode ? Colors.blue : Colors.blue),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _filterTasks(String query) {
+    setState(() {
+      if (query.isEmpty) {
+        filteredPriorities = priorities;
+      } else {
+        filteredPriorities = priorities.map((priority) {
+          final filteredTasks = priority['tasks'].where((task) {
+            final taskTitle = task['title'].toLowerCase();
+            final taskAssignee = task['assignee'].toLowerCase();
+            final searchQuery = query.toLowerCase();
+            return taskTitle.contains(searchQuery) || taskAssignee.contains(searchQuery);
+          }).toList();
+          return {
+            ...priority,
+            'tasks': filteredTasks,
+          };
+        }).toList();
+      }
+    });
+  }
+
+  void _toggleSectionExpansion(String sectionTitle) {
+    setState(() {
+      _expandedSections[sectionTitle] = !(_expandedSections[sectionTitle] ?? false);
+    });
+  }
+
+  void _expandSection(String sectionTitle) {
+    setState(() {
+      _expandedSections[sectionTitle] = true;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Gestión de Tareas', style: TextStyle(color: Colors.white, fontSize: 22)),
+        backgroundColor: const Color.fromARGB(255, 107, 135, 182),
+        leading: Center(
+            child: Image.asset(
+              'lib/assets/Log/LOGO.png', // Asegúrate de que esta ruta sea correcta
+              height: 75,
+              width: 75,
+              fit: BoxFit.contain, // Ajusta la imagen si es necesario
+            ),
         ),
-      ],
+        actions: [
+          ThemeSwitcher(),
+         IconButton(
+            icon: const Icon(Icons.calendar_today),
+            color: Colors.white,  // Ícono de calendario
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => CalendarScreen(tasks: priorities),
+                ),
+              );
+            },
+            tooltip: 'Ver Calendario',
+          ),
+          IconButton(
+            icon: const Icon(Icons.history),
+            color: Colors.white,  // Ícono de historial
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => HistoryScreen(),
+                ),
+              );
+            },
+            tooltip: 'Ver Historial de Tareas',
+          ),
+        ],
+        
+      ),
       
-    ),
-    
 body: Column(
   children: [
+    Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: TextField(
+        controller: _searchController,
+        decoration: InputDecoration(
+          labelText: 'Buscar tareas...',
+          border: OutlineInputBorder(
+            borderSide: BorderSide(
+              color: isDarkMode ? Colors.white : Colors.black,
+            ),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderSide: BorderSide(
+              color: isDarkMode ? Colors.white : Colors.black,
+            ),
+          ),
+        ),
+        onChanged: (value) => _filterTasks(value),
+      ),
+    ),
     Expanded(
       child: SingleChildScrollView(
         child: Padding(
@@ -501,7 +609,8 @@ body: Column(
             children: [
               const SizedBox(height: 16),
               // Lista de tareas agrupadas por prioridades
-              ...priorities.map((priority) {
+              ...filteredPriorities.map((priority) {
+                final isExpanded = _expandedSections[priority['title']] ?? false;
                 return Card(
                   margin: const EdgeInsets.all(8),
                   shape: RoundedRectangleBorder(
@@ -513,6 +622,10 @@ body: Column(
                       priority['title'],
                       style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
                     ),
+                    initiallyExpanded: isExpanded,
+                    onExpansionChanged: (expanded) {
+                      _toggleSectionExpansion(priority['title']);
+                    },
                     children: priority['tasks'].asMap().entries.map<Widget>((entry) {
                       final taskIndex = entry.key;
                       final task = entry.value;
@@ -572,10 +685,13 @@ body: Column(
                                     const SizedBox(width: 10),
                                     IconButton(
                                       icon: const Icon(Icons.edit, color: Colors.blue),
-                                      onPressed: () => _editTask(
-                                        priorities.indexOf(priority),
-                                        taskIndex,
-                                      ),
+                                      onPressed: () {
+                                        _editTask(
+                                          priorities.indexOf(priority),
+                                          taskIndex,
+                                        );
+                                        _expandSection(priority['title']);
+                                      },
                                     ),
                                     IconButton(
                                       icon: const Icon(Icons.delete, color: Colors.red),

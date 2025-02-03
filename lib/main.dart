@@ -74,7 +74,7 @@ void sendUDPMessage(String message) async {
 /// Muestra la notificación en Windows con local_notifier
 void showLocalNotification(String message) async {
   final notification = LocalNotification(
-    title: '📢 Notificación UDP',
+    title: '📢 Notificación JCRG',
     body: message,
   );
   await notification.show();
