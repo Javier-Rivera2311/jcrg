@@ -196,9 +196,26 @@ void _goBack() {
       final result = await FilePicker.platform.getDirectoryPath();
       if (result != null) {
         for (var filePath in _selectedFiles) {
-          final file = File(filePath);
+          final file = FileSystemEntity.typeSync(filePath) == FileSystemEntityType.directory
+              ? Directory(filePath)
+              : File(filePath);
           final newFilePath = '$result${Platform.pathSeparator}${file.path.split(Platform.pathSeparator).last}';
-          file.renameSync(newFilePath);
+          
+          if (file is Directory) {
+            Directory(newFilePath).createSync(recursive: true);
+            file.listSync(recursive: true).forEach((entity) {
+              final relativePath = entity.path.substring(file.path.length + 1);
+              final newEntityPath = '$newFilePath${Platform.pathSeparator}$relativePath';
+              if (entity is File) {
+                entity.copySync(newEntityPath);
+              } else if (entity is Directory) {
+                Directory(newEntityPath).createSync(recursive: true);
+              }
+            });
+            file.deleteSync(recursive: true);
+          } else if (file is File) {
+            file.renameSync(newFilePath);
+          }
 
           setState(() {
             _fileRegistry.remove(file.path);
@@ -221,9 +238,25 @@ void _goBack() {
       final result = await FilePicker.platform.getDirectoryPath();
       if (result != null) {
         for (var filePath in _selectedFiles) {
-          final file = File(filePath);
+          final file = FileSystemEntity.typeSync(filePath) == FileSystemEntityType.directory
+              ? Directory(filePath)
+              : File(filePath);
           final newFilePath = '$result${Platform.pathSeparator}${file.path.split(Platform.pathSeparator).last}';
-          file.copySync(newFilePath);
+          
+          if (file is Directory) {
+            Directory(newFilePath).createSync(recursive: true);
+            file.listSync(recursive: true).forEach((entity) {
+              final relativePath = entity.path.substring(file.path.length + 1);
+              final newEntityPath = '$newFilePath${Platform.pathSeparator}$relativePath';
+              if (entity is File) {
+                entity.copySync(newEntityPath);
+              } else if (entity is Directory) {
+                Directory(newEntityPath).createSync(recursive: true);
+              }
+            });
+          } else if (file is File) {
+            file.copySync(newFilePath);
+          }
 
           setState(() {
             _fileRegistry[newFilePath] = DateTime.now();
