@@ -11,7 +11,9 @@ class HistoryScreen extends StatefulWidget {
 }
 
 class _HistoryScreenState extends State<HistoryScreen> {
-  final String historyFilePath = r'\\desktop-co5hnd9\SERVIDOR B\Informatica\flutter\tareas\history.json';
+//  final String historyFilePath = r'\\desktop-co5hnd9\SERVIDOR B\Informatica\flutter\tareas\history.json';
+  final String historyFilePath = r'C:\Users\javie\OneDrive\Desktop\tests flutter\tareas\history.json';
+
   List<dynamic> taskHistory = [];
   List<dynamic> filteredTaskHistory = [];
   final TextEditingController _historySearchController = TextEditingController();

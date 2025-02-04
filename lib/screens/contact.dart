@@ -33,8 +33,10 @@ class ContactManagerScreen extends StatefulWidget {
 }
 
 class _ContactManagerScreenState extends State<ContactManagerScreen> {
-  final String filePath = r'\\desktop-co5hnd9\\SERVIDOR B\\Informatica\\flutter\\tareas\\contact.json';
-  List<Map<String, String>> _contacts = [];
+//  final String filePath = r'\\desktop-co5hnd9\\SERVIDOR B\\Informatica\\flutter\\tareas\\contact.json';
+  final String filePath = r'C:\Users\javie\OneDrive\Desktop\tests flutter\tareas\contact.json';
+
+ List<Map<String, String>> _contacts = [];
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = "";
 

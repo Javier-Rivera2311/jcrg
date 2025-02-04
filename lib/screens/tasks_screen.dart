@@ -63,8 +63,12 @@ extension DateTimeExtension on DateTime {
 }
 
 class _TaskManagerScreenState extends State<TaskManagerScreen> {
-  final String filePath = r'\\desktop-co5hnd9\SERVIDOR B\Informatica\flutter\tareas\tasks.json';
-  final String historyFilePath = r'\\desktop-co5hnd9\SERVIDOR B\Informatica\flutter\tareas\history.json';
+  //final String filePath = r'\\desktop-co5hnd9\SERVIDOR B\Informatica\flutter\tareas\tasks.json';
+  final String filePath = r'C:\Users\javie\OneDrive\Desktop\tests flutter\tareas\tasks.json';
+  
+  //final String historyFilePath = r'\\desktop-co5hnd9\SERVIDOR B\Informatica\flutter\tareas\history.json';
+  final String historyFilePath = r'C:\Users\javie\OneDrive\Desktop\tests flutter\tareas\history.json';
+
   List<dynamic> priorities = [];
   List<dynamic> filteredPriorities = [];
   List<dynamic> taskHistory = [];

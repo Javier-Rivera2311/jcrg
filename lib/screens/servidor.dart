@@ -15,11 +15,15 @@ class Servidor extends StatefulWidget {
 }
 
 class _ServidorState extends State<Servidor> {
-  String _currentPath = r'\\desktop-co5hnd9\SERVIDOR';
+  //String _currentPath = r'\\desktop-co5hnd9\SERVIDOR';
+  String _currentPath = r'C:\Users\javie\OneDrive\Desktop\tests flutter';
+
   List<FileSystemEntity> _files = [];
   List<FileSystemEntity> _filteredFiles = [];
   final Map<String, DateTime> _fileRegistry = {}; // Registro de archivos con fechas
-  final String _registryPath = r'\\desktop-co5hnd9\SERVIDOR B\Informatica\flutter\tareas\registry.json';
+//  final String _registryPath = r'\\desktop-co5hnd9\SERVIDOR B\Informatica\flutter\tareas\registry.json';
+  final String _registryPath = r'C:\Users\javie\OneDrive\Desktop\tests flutter\registry.json';
+
   final List<String> _selectedFiles = []; // Lista de archivos seleccionados para mover
   final TextEditingController _searchController = TextEditingController(); // Controlador para el buscador
 
@@ -84,7 +88,9 @@ void _listFiles(String path) {
 }
 
 void _goBack() {
-  if (_currentPath != r'\\desktop-co5hnd9\SERVIDOR') {
+  //if (_currentPath != r'\\desktop-co5hnd9\SERVIDOR') {
+  if (_currentPath != r'C:\Users\javie\OneDrive\Desktop\tests flutter') {
+
     final parentDir = Directory(_currentPath).parent.path;
     _listFiles(parentDir);
   }
@@ -359,15 +365,21 @@ Future<void> _copySelectedFiles() async {
               spacing: 8.0,
               children: [
                 ElevatedButton(
-                  onPressed: _currentPath != r'\\desktop-co5hnd9\SERVIDOR' ? _goBack : null,
+                  //onPressed: _currentPath != r'\\desktop-co5hnd9\SERVIDOR' ? _goBack : null,
+                  onPressed: _currentPath != r'C:\Users\javie\OneDrive\Desktop\tests flutter' ? _goBack : null,
+                  
                   style: ButtonStyle(
                     backgroundColor: MaterialStateProperty.all(
-                      _currentPath != r'\\desktop-co5hnd9\SERVIDOR'
+                      //_currentPath != r'\\desktop-co5hnd9\SERVIDOR'
+                      _currentPath != r'C:\Users\javie\OneDrive\Desktop\tests flutter'
+
                           ? const Color.fromARGB(255, 76, 78, 175)
                           : Colors.grey,
                     ),
                     foregroundColor: MaterialStateProperty.all(
-                      _currentPath != r'\\desktop-co5hnd9\SERVIDOR'
+                     // _currentPath != r'\\desktop-co5hnd9\SERVIDOR'
+                      _currentPath != r'C:\Users\javie\OneDrive\Desktop\tests flutter'
+
                           ? Colors.white
                           : Colors.black38,
                     ),

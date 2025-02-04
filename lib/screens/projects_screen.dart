@@ -15,13 +15,16 @@ class ProjectManager extends StatefulWidget {
 
 class _ProjectManagerState extends State<ProjectManager> {
   final List<Map<String, String>> _projects = [];
-  final String _projectsFile = r'\\desktop-co5hnd9\SERVIDOR B\Informatica\flutter\projects.json';
+ //final String _projectsFile = r'\\desktop-co5hnd9\SERVIDOR B\Informatica\flutter\projects.json';
+  final String _projectsFile = r'C:\Users\javie\OneDrive\Desktop\tests flutter\tareas\projects.json';
+
   final TextEditingController _projectNameController = TextEditingController();
   final TextEditingController _projectPathController = TextEditingController();
   final TextEditingController _searchController = TextEditingController();
   final List<String> _selectedFiles = []; // Archivos seleccionados para mover
   final Map<String, DateTime> _fileRegistry = {}; // Registro de archivos con fechas
-  final String _registryPath = r'\\desktop-co5hnd9\SERVIDOR B\Informatica\flutter\tareas\registry.json';
+  //final String _registryPath = r'\\desktop-co5hnd9\SERVIDOR B\Informatica\flutter\tareas\registry.json';
+  final String _registryPath = r'C:\Users\javie\OneDrive\Desktop\tests flutter\tareas\registry.json';
   
   List<Map<String, String>> _filteredProjects = [];
   

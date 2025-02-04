@@ -15,7 +15,9 @@ class MeetingsScreen extends StatefulWidget {
 }
 
 class _MeetingsScreenState extends State<MeetingsScreen> {
-  final String filePath = r'\\desktop-co5hnd9\SERVIDOR B\Informatica\flutter\reuniones\meetings.json';
+  //final String filePath = r'\\desktop-co5hnd9\SERVIDOR B\Informatica\flutter\reuniones\meetings.json';
+  final String filePath = r'C:\Users\javie\OneDrive\Desktop\tests flutter\tareas\meetings.json';
+  
   List<dynamic> meetings = [];
   List<dynamic> filteredMeetings = [];
   final TextEditingController _titleController = TextEditingController();
