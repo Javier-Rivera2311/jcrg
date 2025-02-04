@@ -269,11 +269,11 @@ void _createFolder() {
             onPressed: () {
               final folderName = folderNameController.text.trim();
               if (folderName.isNotEmpty) {
-                final newFolderPath = '$_currentPath${Platform.pathSeparator}$folderName';
+                final newFolderPath = '$_selectedProjectPath${Platform.pathSeparator}$folderName';
                 final newFolder = Directory(newFolderPath);
                 if (!newFolder.existsSync()) {
-                  newFolder.createSync();
-                  _listFiles(_currentPath); // Actualizar lista de archivos
+                  newFolder.createSync(recursive: true);
+                  _listFiles(_selectedProjectPath!); // Actualizar lista de archivos
                   _showMessage('Carpeta creada exitosamente.');
                 } else {
                   _showMessage('La carpeta ya existe.');
@@ -297,20 +297,37 @@ Future<void> _moveSelectedFiles() async {
     final result = await FilePicker.platform.getDirectoryPath();
     if (result != null) {
       for (var filePath in _selectedFiles) {
-        final file = File(filePath);
+        final file = FileSystemEntity.typeSync(filePath) == FileSystemEntityType.directory
+            ? Directory(filePath)
+            : File(filePath);
         final newFilePath = '$result${Platform.pathSeparator}${file.path.split(Platform.pathSeparator).last}';
-        file.renameSync(newFilePath);
+        
+        if (file is Directory) {
+          Directory(newFilePath).createSync(recursive: true);
+          file.listSync(recursive: true).forEach((entity) {
+            final relativePath = entity.path.substring(file.path.length + 1);
+            final newEntityPath = '$newFilePath${Platform.pathSeparator}$relativePath';
+            if (entity is File) {
+              entity.copySync(newEntityPath);
+            } else if (entity is Directory) {
+              Directory(newEntityPath).createSync(recursive: true);
+            }
+          });
+          file.deleteSync(recursive: true);
+        } else if (file is File) {
+          file.renameSync(newFilePath);
+        }
 
         setState(() {
-          _fileRegistry.remove(file.path); // Elimina el registro antiguo
-          _fileRegistry[newFilePath] = DateTime.now(); // Registra la nueva ubicación con fecha actual
+          _fileRegistry.remove(file.path);
+          _fileRegistry[newFilePath] = DateTime.now();
         });
       }
 
-      _listFiles(_currentPath); // Actualiza la lista de archivos
-      _saveRegistry(); // Guarda el registro actualizado
-      _selectedFiles.clear(); // Limpia la selección
+      _listFiles(_selectedProjectPath!);
+      _saveRegistry();
       _showMessage('Archivos movidos exitosamente.');
+      _selectedFiles.clear();
     }
   } catch (e) {
     _showMessage('Error al mover archivos: $e');
@@ -326,11 +343,20 @@ Future<void> _copySelectedFiles() async {
             ? Directory(filePath)
             : File(filePath);
         final newFilePath = '$result${Platform.pathSeparator}${file.path.split(Platform.pathSeparator).last}';
-
-        if (file is File) {
+        
+        if (file is Directory) {
+          Directory(newFilePath).createSync(recursive: true);
+          file.listSync(recursive: true).forEach((entity) {
+            final relativePath = entity.path.substring(file.path.length + 1);
+            final newEntityPath = '$newFilePath${Platform.pathSeparator}$relativePath';
+            if (entity is File) {
+              entity.copySync(newEntityPath);
+            } else if (entity is Directory) {
+              Directory(newEntityPath).createSync(recursive: true);
+            }
+          });
+        } else if (file is File) {
           file.copySync(newFilePath);
-        } else if (file is Directory) {
-          _copyDirectory(file, Directory(newFilePath));
         }
 
         setState(() {
@@ -338,7 +364,7 @@ Future<void> _copySelectedFiles() async {
         });
       }
 
-      _listFiles(_currentPath);
+      _listFiles(_selectedProjectPath!);
       _saveRegistry();
       _showMessage('Archivos copiados exitosamente.');
       _selectedFiles.clear();
