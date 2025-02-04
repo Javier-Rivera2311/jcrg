@@ -6,6 +6,12 @@ import 'package:intl/intl.dart';
 import 'package:flutter/services.dart';
 import 'package:jcrg/widgets/calendar_meetings.dart'; // Add this import
 import 'package:syncfusion_flutter_calendar/calendar.dart'; // Add this import
+import 'dart:ui' as ui;
+import 'dart:typed_data';
+import 'package:printing/printing.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:flutter/rendering.dart';
 
 class MeetingsScreen extends StatefulWidget {
   const MeetingsScreen({Key? key}) : super(key: key);
@@ -28,6 +34,7 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
   TimeOfDay _selectedTime = TimeOfDay.now();
   String _meetingType = "remoto";
   bool showCalendar = false; // Add this variable
+  final GlobalKey _calendarKey = GlobalKey();
 
   @override
   void initState() {
@@ -716,6 +723,75 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
     });
   }
 
+  Future<void> _printCalendar() async {
+  final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+  if (isDarkMode) {
+    // Mostrar advertencia
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: isDarkMode
+              ? const Color.fromARGB(255, 40, 40, 40) // Fondo oscuro para modo oscuro
+              : Colors.white, // Fondo claro para modo claro
+          title: Text(
+            'Advertencia',
+            style: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
+          ),
+          content: Text(
+            'Por favor, cambie al tema claro antes de imprimir.',
+            style: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(
+                'Aceptar',
+                style: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  } else {
+    try {
+      RenderRepaintBoundary boundary = _calendarKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
+      ui.Image image = await boundary.toImage(pixelRatio: 3.0);
+      ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+      Uint8List pngBytes = byteData!.buffer.asUint8List();
+
+      // Mostrar el cuadro de diálogo de impresión
+      await Printing.layoutPdf(onLayout: (PdfPageFormat format) async {
+        final doc = pw.Document();
+        final image = pw.MemoryImage(pngBytes);
+        final margin = 1 * PdfPageFormat.cm;
+        final pageFormat = format.copyWith(
+          marginLeft: margin,
+          marginRight: margin,
+          marginTop: margin,
+          marginBottom: margin,
+        );
+
+        doc.addPage(pw.Page(
+          pageFormat: pageFormat,
+          build: (pw.Context context) {
+            return pw.Center(
+              child: pw.Image(image, fit: pw.BoxFit.contain),
+            );
+          },
+        ));
+        return doc.save();
+      });
+
+      print("Imagen capturada con éxito");
+    } catch (e) {
+      print("Error al capturar la imagen: $e");
+    }
+  }
+}
+
   Widget _buildCalendarView() {
     return CalendarMeetingsScreen(meetings: meetings);
   }
@@ -743,6 +819,11 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
               ),
         actions: [
           ThemeSwitcher(),
+          if (showCalendar)
+            IconButton(
+              icon: const Icon(Icons.print, color: Colors.white),
+              onPressed: _printCalendar,
+            ),
           IconButton(
             icon: const Icon(Icons.calendar_today, color: Colors.white),
             onPressed: _toggleCalendar,
@@ -752,7 +833,12 @@ class _MeetingsScreenState extends State<MeetingsScreen> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: showCalendar ? _buildCalendarView() : _buildTableView(),
+        child: showCalendar
+            ? RepaintBoundary(
+                key: _calendarKey,
+                child: _buildCalendarView(),
+              )
+            : _buildTableView(),
       ),
       floatingActionButton: showCalendar
           ? null
