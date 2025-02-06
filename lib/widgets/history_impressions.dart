@@ -31,7 +31,7 @@ class HistoryImpressionsScreenState extends State<HistoryImpressionsScreen> {
       if (await file.exists()) {
         final content = await file.readAsString();
         setState(() {
-          printHistory = json.decode(content);
+          printHistory = List<Map<String, dynamic>>.from(json.decode(content));
           filteredPrintHistory = printHistory;
         });
       }

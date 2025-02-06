@@ -1,5 +1,6 @@
 import 'dart:io'; // Importar dart:io
 import 'dart:typed_data'; // Importar dart:typed_data
+import 'dart:convert'; // Importar dart:convert
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart'; // Importar FilePicker
 import 'package:printing/printing.dart'; // Importar Printing
@@ -18,6 +19,14 @@ class ImpressionsScreen extends StatefulWidget {
 class ImpressionsScreenState extends State<ImpressionsScreen> {
   bool _showHistory = false;
   List<File> _selectedFiles = [];
+  List<Map<String, dynamic>> _printHistory = [];
+  final String _historyFilePath = r'C:\Users\javie\OneDrive\Desktop\tests flutter\tareas\print_history.json';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPrintHistory();
+  }
 
   void _togglePrintHistory() {
     setState(() {
@@ -68,6 +77,14 @@ class ImpressionsScreenState extends State<ImpressionsScreen> {
         } else {
           _showMessage("El archivo '$fileName' no es compatible para impresión.");
         }
+
+        // Registrar en el historial de impresiones
+        _printHistory.add({
+          'fileName': fileName,
+          'copies': 1, // Asumimos una copia por archivo
+          'timestamp': DateTime.now().toIso8601String(),
+        });
+        _savePrintHistory();
       } catch (e) {
         _showMessage("Error al imprimir el archivo '${file.path.split('/').last}': $e");
       }
@@ -97,6 +114,30 @@ class ImpressionsScreenState extends State<ImpressionsScreen> {
         ],
       ),
     );
+  }
+
+  Future<void> _loadPrintHistory() async {
+    try {
+      final file = File(_historyFilePath);
+      if (await file.exists()) {
+        final content = await file.readAsString();
+        setState(() {
+          _printHistory = json.decode(content);
+        });
+      }
+    } catch (e) {
+      print('Error al leer el archivo de historial: $e');
+    }
+  }
+
+  Future<void> _savePrintHistory() async {
+    try {
+      final file = File(_historyFilePath);
+      final content = json.encode(_printHistory);
+      await file.writeAsString(content);
+    } catch (e) {
+      print('Error al guardar historial de impresiones: $e');
+    }
   }
 
   @override
