@@ -14,7 +14,8 @@ class HistoryImpressionsScreen extends StatefulWidget {
 
 class HistoryImpressionsScreenState extends State<HistoryImpressionsScreen> {
   List<Map<String, dynamic>> printHistory = [];
-  final String historyFilePath = r'C:\Users\javie\OneDrive\Desktop\tests flutter\tareas\print_history.json';
+  //final String historyFilePath = r'C:\Users\javie\OneDrive\Desktop\tests flutter\tareas\print_history.json';
+  final String historyFilePath = r'\\desktop-co5hnd9\SERVIDOR B\Informatica\flutter\tareas\print_history.json';
 
   List<dynamic> filteredPrintHistory = [];
   final TextEditingController _historySearchController = TextEditingController();

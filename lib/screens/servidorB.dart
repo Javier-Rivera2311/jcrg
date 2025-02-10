@@ -15,14 +15,14 @@ class FileExplorer extends StatefulWidget {
 }
 
 class _FileExplorerState extends State<FileExplorer> {
-  //String _currentPath = r'\\desktop-co5hnd9\SERVIDOR B';
-  String _currentPath = r'C:\Users\javie\OneDrive\Desktop\ada\pdf';
+  String _currentPath = r'\\desktop-co5hnd9\SERVIDOR B';
+  //String _currentPath = r'C:\Users\javie\OneDrive\Desktop\ada\pdf';
 
   List<FileSystemEntity> _files = [];
   List<FileSystemEntity> _filteredFiles = [];
   final Map<String, DateTime> _fileRegistry = {}; // Registro de archivos con fechas
-  //final String _registryPath = r'\\desktop-co5hnd9\SERVIDOR B\Informatica\flutter\tareas\registry.json';
-  final String _registryPath = r'C:\Users\javie\OneDrive\Desktop\tests flutter\registry.json';
+  final String _registryPath = r'\\desktop-co5hnd9\SERVIDOR B\Informatica\flutter\tareas\registry.json';
+  //final String _registryPath = r'C:\Users\javie\OneDrive\Desktop\tests flutter\registry.json';
  
   final List<String> _selectedFiles = []; // Lista de archivos seleccionados para mover
   final TextEditingController _searchController = TextEditingController(); // Controlador para el buscador
@@ -88,8 +88,8 @@ void _listFiles(String path) {
 }
 
 void _goBack() {
-  //if (_currentPath != r'\\desktop-co5hnd9\SERVIDOR B') {
-    if (_currentPath != r'C:\Users\javie\OneDrive\Desktop\ada\pdf') {
+  if (_currentPath != r'\\desktop-co5hnd9\SERVIDOR B') {
+    //if (_currentPath != r'C:\Users\javie\OneDrive\Desktop\ada\pdf') {
 
     final parentDir = Directory(_currentPath).parent.path;
     _listFiles(parentDir);
@@ -398,20 +398,20 @@ void _goBack() {
               spacing: 8.0,
               children: [
                 ElevatedButton(
-                  //onPressed: _currentPath != r'\\desktop-co5hnd9\SERVIDOR B' ? _goBack : null,
-                  onPressed: _currentPath != r'C:\Users\javie\OneDrive\Desktop\ada\pdf' ? _goBack : null,
+                  onPressed: _currentPath != r'\\desktop-co5hnd9\SERVIDOR B' ? _goBack : null,
+                  //onPressed: _currentPath != r'C:\Users\javie\OneDrive\Desktop\ada\pdf' ? _goBack : null,
   
                   style: ButtonStyle(
                     backgroundColor: MaterialStateProperty.all(
-                      //_currentPath != r'\\desktop-co5hnd9\SERVIDOR B'
-                      _currentPath != r'C:\Users\javie\OneDrive\Desktop\ada\pdf'
+                      _currentPath != r'\\desktop-co5hnd9\SERVIDOR B'
+                      //_currentPath != r'C:\Users\javie\OneDrive\Desktop\ada\pdf'
                       
                           ? const Color.fromARGB(255, 76, 78, 175)
                           : Colors.grey,
                     ),
                     foregroundColor: MaterialStateProperty.all(
-                      //_currentPath != r'\\desktop-co5hnd9\SERVIDOR B'
-                      _currentPath != r'C:\Users\javie\OneDrive\Desktop\ada\pdf'
+                      _currentPath != r'\\desktop-co5hnd9\SERVIDOR B'
+                      //_currentPath != r'C:\Users\javie\OneDrive\Desktop\ada\pdf'
                       
                       
                           ? Colors.white

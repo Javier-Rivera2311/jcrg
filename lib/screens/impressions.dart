@@ -20,7 +20,8 @@ class ImpressionsScreenState extends State<ImpressionsScreen> {
   bool _showHistory = false;
   List<File> _selectedFiles = [];
   List<Map<String, dynamic>> _printHistory = [];
-  final String _historyFilePath = r'C:\Users\javie\OneDrive\Desktop\tests flutter\tareas\print_history.json';
+  //final String _historyFilePath = r'C:\Users\javie\OneDrive\Desktop\tests flutter\tareas\print_history.json';
+  final String _historyFilePath = r'\\desktop-co5hnd9\\SERVIDOR B\\Informatica\\flutter\\tareas\\print_history.json';
 
   @override
   void initState() {
