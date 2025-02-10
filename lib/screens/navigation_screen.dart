@@ -6,6 +6,7 @@ import 'package:jcrg/screens/projects_screen.dart';
 import 'package:jcrg/screens/impressions.dart';
 import 'package:jcrg/screens/meetings.dart';
 import 'package:jcrg/screens/servidor.dart';
+import 'package:jcrg/screens/actas.dart';
 import 'package:jcrg/screens/help.dart';
 import 'package:jcrg/screens/send_notification.dart';
 
@@ -19,8 +20,6 @@ class NavigationScreen extends StatefulWidget {
 
 class _NavigationScreenState extends State<NavigationScreen> {
   int currentIndex = 0;
-  bool showSubMenu = false; // Controla si el submenú está visible
-  int? activeSubMenuIndex; // Índice del submenú activo (opcional)
 
   @override
   Widget build(BuildContext context) {
@@ -50,11 +49,7 @@ class _NavigationScreenState extends State<NavigationScreen> {
         selected: currentIndex,
         onChanged: (index) {
           setState(() {
-            // Si el index es un PaneItemExpander, no lo selecciona automáticamente
-            if (index != currentIndex) {
-              currentIndex = index;
-            }
-            showSubMenu = false; // Ocultar submenú si es necesario
+            currentIndex = index;
           });
         },
 
@@ -69,10 +64,12 @@ class _NavigationScreenState extends State<NavigationScreen> {
             title: const Text('Enviar notificación'),
             body: SendNotificationScreen(),
           ),
+
+          // Expansor de Servidores
           PaneItemExpander(
             icon: const Icon(FluentIcons.cloud),
             title: const Text('Servidores'),
-            body: Servidor(), // Add a default body for the expander
+            body: Servidor(),
             items: [
               PaneItem(
                 icon: const Icon(FluentIcons.cloud),
@@ -86,20 +83,27 @@ class _NavigationScreenState extends State<NavigationScreen> {
               ),
             ],
           ),
+
+          // Expansor de Gestión de Proyectos con Reuniones y Actas incluidas
           PaneItemExpander(
             icon: const Icon(FluentIcons.project_management),
             title: const Text('Gestión de Proyectos'),
-            body: ProjectManager(), // Add a default body for the expander
+            body: ProjectManager(),
             items: [
               PaneItem(
                 icon: const Icon(FluentIcons.project_document),
                 title: const Text('Proyectos'),
-                body: const ProjectManager(),
+                body: ProjectManager(),
               ),
               PaneItem(
                 icon: const Icon(FluentIcons.group),
                 title: const Text('Reuniones'),
-                body: MeetingsScreen(), // Submenú para entregas
+                body: MeetingsScreen(),
+              ),
+              PaneItem(
+                icon: const Icon(FluentIcons.folder),
+                title: const Text('Actas'),
+                body: ActasScreen(), // Aquí puedes reemplazar con la pantalla específica de Actas
               ),
               PaneItem(
                 icon: const Icon(FluentIcons.print),
@@ -108,12 +112,14 @@ class _NavigationScreenState extends State<NavigationScreen> {
               ),
             ],
           ),
+
           PaneItem(
             icon: const Icon(FluentIcons.contact_list),
             title: const Text('Contactos'),
             body: ContactManagerScreen(),
           ),
         ],
+
         footerItems: [
           PaneItem(
             icon: const Icon(FluentIcons.help),

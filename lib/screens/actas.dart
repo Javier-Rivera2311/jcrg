@@ -6,25 +6,25 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:jcrg/widgets/file_utils.dart';
 import 'package:jcrg/screens/theme_switcher.dart';
 
-class ProjectManager extends StatefulWidget {
-  const ProjectManager({Key? key}) : super(key: key);
+class ActasScreen extends StatefulWidget {
+  const ActasScreen({Key? key}) : super(key: key);
 
   @override
-  _ProjectManagerState createState() => _ProjectManagerState();
+  _ActasScreenState createState() => _ActasScreenState();
 }
 
-class _ProjectManagerState extends State<ProjectManager> {
+class _ActasScreenState extends State<ActasScreen> {
   final List<Map<String, String>> _projects = [];
-  final String _projectsFile = r'\\desktop-co5hnd9\SERVIDOR B\Informatica\flutter\projects.json';
-  //final String _projectsFile = r'C:\Users\javie\OneDrive\Desktop\tests flutter\tareas\projects.json';
+  final String _projectsFile = r'\\desktop-co5hnd9\SERVIDOR B\Informatica\flutter\actas.json';
+  //final String _projectsFile = r'C:\Users\javie\OneDrive\Desktop\tests flutter\tareas\actas.json';
 
   final TextEditingController _projectNameController = TextEditingController();
   final TextEditingController _projectPathController = TextEditingController();
   final TextEditingController _searchController = TextEditingController();
   final List<String> _selectedFiles = []; // Archivos seleccionados para mover
   final Map<String, DateTime> _fileRegistry = {}; // Registro de archivos con fechas
-  final String _registryPath = r'\\desktop-co5hnd9\SERVIDOR B\Informatica\flutter\tareas\registry.json';
-  //final String _registryPath = r'C:\Users\javie\OneDrive\Desktop\tests flutter\tareas\registry.json';
+  final String _registryPath = r'\\desktop-co5hnd9\SERVIDOR B\Informatica\flutter\tareas\registry_actas.json';
+  //final String _registryPath = r'C:\Users\javie\OneDrive\Desktop\tests flutter\tareas\registry_actas.json';
   
   List<Map<String, String>> _filteredProjects = [];
   
@@ -182,7 +182,7 @@ void _goBackToProjectSelection() {
       _projects.add({'name': name, 'path': path});
       _saveProjects();
     });
-    _showMessage('Proyecto "$name" agregado exitosamente.');
+    _showMessage('Acta Reunion"$name" agregado exitosamente.');
   }
 
   void _deleteProject(int index) {
@@ -190,7 +190,7 @@ void _goBackToProjectSelection() {
       _projects.removeAt(index);
       _saveProjects();
     });
-    _showMessage('Proyecto eliminado.');
+    _showMessage('Acta reunion eliminada.');
   }
 
   Future<void> _openFile(FileSystemEntity file) async {
@@ -458,9 +458,9 @@ Future<void> _downloadProjectContent(String projectPath) async {
             await newDir.create(recursive: true);
           }
         }
-        _showMessage('Contenido del proyecto descargado exitosamente.');
+        _showMessage('Archivos descargados exitosamente.');
       } else {
-        _showMessage('El directorio del proyecto no existe.');
+        _showMessage('El directorio de la reunion no existe.');
       }
     } else {
       _showMessage('No se seleccionó una carpeta de destino.');
@@ -476,7 +476,7 @@ Future<void> _downloadProjectContent(String projectPath) async {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Gestión de Proyectos', style: TextStyle(color: Colors.white)),
+        title: const Text('Actas de reuniones', style: TextStyle(color: Colors.white)),
         backgroundColor: const Color.fromARGB(255, 107, 135, 182),
         leading: _selectedProjectPath != null
             ? IconButton(
@@ -503,7 +503,7 @@ Future<void> _downloadProjectContent(String projectPath) async {
                   child: TextField(
                     controller: _searchController,
                     decoration: InputDecoration(
-                      labelText: 'Buscar proyectos...',
+                      labelText: 'Buscar Actas...',
                       border: OutlineInputBorder(
                         borderSide: BorderSide(
                           color: isDarkMode ? Colors.white : Colors.black,
@@ -584,7 +584,7 @@ Future<void> _downloadProjectContent(String projectPath) async {
                                 ? const Color.fromARGB(255, 40, 40, 40)
                                 : Colors.white,
                             title: Text(
-                              'Añadir Proyecto',
+                              'Añadir Acta',
                               style: TextStyle(
                                 color: isDarkMode ? Colors.white : Colors.black,
                               ),
@@ -598,7 +598,7 @@ Future<void> _downloadProjectContent(String projectPath) async {
                                     color: isDarkMode ? Colors.white : Colors.black,
                                   ),
                                   decoration: InputDecoration(
-                                    labelText: 'Nombre del proyecto',
+                                    labelText: 'Nombre de la reunión',
                                     labelStyle: TextStyle(
                                       color: isDarkMode ? Colors.white : Colors.black,
                                     ),
@@ -617,7 +617,7 @@ Future<void> _downloadProjectContent(String projectPath) async {
                                     color: isDarkMode ? Colors.white : Colors.black,
                                   ),
                                   decoration: InputDecoration(
-                                    labelText: 'Ruta del proyecto',
+                                    labelText: 'Ruta de la reunión',
                                     labelStyle: TextStyle(
                                       color: isDarkMode ? Colors.white : Colors.black,
                                     ),
@@ -681,7 +681,7 @@ Future<void> _downloadProjectContent(String projectPath) async {
                         },
                       );
                     },
-                    child: const Text('Añadir Proyecto'),
+                    child: const Text('Añadir Acta'),
                   ),
                 ),
               ],
@@ -890,7 +890,7 @@ Expanded(
 
 void main() {
   runApp(MaterialApp(
-    home: const ProjectManager(),
+    home: const ActasScreen(),
     theme: ThemeData(
       primarySwatch: Colors.blue,
       inputDecorationTheme: InputDecorationTheme(border: OutlineInputBorder(),
