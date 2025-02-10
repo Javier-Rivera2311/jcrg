@@ -185,6 +185,14 @@ void _goBackToProjectSelection() {
     _showMessage('Acta Reunion"$name" agregado exitosamente.');
   }
 
+  void _editProject(int index, String name, String path) {
+    setState(() {
+      _projects[index] = {'name': name, 'path': path};
+      _saveProjects();
+    });
+    _showMessage('Acta Reunion "$name" editado exitosamente.');
+  }
+
   void _deleteProject(int index) {
     setState(() {
       _projects.removeAt(index);
@@ -548,6 +556,118 @@ Future<void> _downloadProjectContent(String projectPath) async {
                                 icon: const Icon(Icons.download, color: Colors.green),
                                 onPressed: () => _downloadProjectContent(project['path'] ?? ''),
                                 tooltip: 'Descargar contenido del proyecto',
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.edit, color: Colors.blue),
+                                onPressed: () {
+                                  _projectNameController.text = project['name'] ?? '';
+                                  _projectPathController.text = project['path'] ?? '';
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) {
+                                      return AlertDialog(
+                                        backgroundColor: isDarkMode
+                                            ? const Color.fromARGB(255, 40, 40, 40)
+                                            : Colors.white,
+                                        title: Text(
+                                          'Editar Acta',
+                                          style: TextStyle(
+                                            color: isDarkMode ? Colors.white : Colors.black,
+                                          ),
+                                        ),
+                                        content: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            TextField(
+                                              controller: _projectNameController,
+                                              style: TextStyle(
+                                                color: isDarkMode ? Colors.white : Colors.black,
+                                              ),
+                                              decoration: InputDecoration(
+                                                labelText: 'Nombre de la reunión',
+                                                labelStyle: TextStyle(
+                                                  color: isDarkMode ? Colors.white : Colors.black,
+                                                ),
+                                                border: const OutlineInputBorder(),
+                                                enabledBorder: OutlineInputBorder(
+                                                  borderSide: BorderSide(
+                                                    color: isDarkMode ? Colors.grey : Colors.black45,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                            const SizedBox(height: 20),
+                                            TextField(
+                                              controller: _projectPathController,
+                                              style: TextStyle(
+                                                color: isDarkMode ? Colors.white : Colors.black,
+                                              ),
+                                              decoration: InputDecoration(
+                                                labelText: 'Ruta de la reunión',
+                                                labelStyle: TextStyle(
+                                                  color: isDarkMode ? Colors.white : Colors.black,
+                                                ),
+                                                border: const OutlineInputBorder(),
+                                                enabledBorder: OutlineInputBorder(
+                                                  borderSide: BorderSide(
+                                                    color: isDarkMode ? Colors.grey : Colors.black45,
+                                                  ),
+                                                ),
+                                                suffixIcon: IconButton(
+                                                  icon: const Icon(Icons.folder),
+                                                  onPressed: () async {
+                                                    final result = await FilePicker.platform.getDirectoryPath();
+                                                    if (result != null) {
+                                                      setState(() {
+                                                        _projectPathController.text = result;
+                                                      });
+                                                    }
+                                                  },
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        actions: [
+                                          TextButton(
+                                            child: Text(
+                                              'Cancelar',
+                                              style: TextStyle(
+                                                color: isDarkMode ? Colors.white : Colors.black,
+                                              ),
+                                            ),
+                                            onPressed: () {
+                                              Navigator.pop(context);
+                                              _projectNameController.clear();
+                                              _projectPathController.clear();
+                                            },
+                                          ),
+                                          TextButton(
+                                            child: Text(
+                                              'Guardar',
+                                              style: TextStyle(
+                                                color: isDarkMode ? Colors.blue : Colors.blue,
+                                              ),
+                                            ),
+                                            onPressed: () {
+                                              final name = _projectNameController.text.trim();
+                                              final path = _projectPathController.text.trim();
+                                              if (name.isNotEmpty && path.isNotEmpty) {
+                                                _editProject(index, name, path);
+                                                _projectNameController.clear();
+                                                _projectPathController.clear();
+                                                Navigator.pop(context);
+                                              } else {
+                                                _showMessage('Por favor, complete ambos campos.');
+                                              }
+                                            },
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                  );
+                                },
+                                tooltip: 'Editar proyecto',
                               ),
                               IconButton(
                                 icon: const Icon(Icons.delete, color: Color.fromARGB(255, 255, 17, 0)),
