@@ -101,17 +101,17 @@ class _HelpScreenState extends State<HelpScreen> {
 
     switch (_lastTopicAsked) {
       case 'tareas':
-        return 'Aquí tienes un enlace a un video de YouTube que podría ayudarte:\n https://www.youtube.com/watch?v=video_tareas';
+        return 'Aquí tienes un enlace a un video de YouTube que podría ayudarte:\n https://www.youtube.com/watch?v=fntlolvvOoo&list=PLpsBhfSuwy6epsYySdw-gAiZO5hI-jtdl&index=1&pp=gAQBiAQB';
       case 'notificaciones':
         return 'Aquí tienes un enlace a un video de YouTube que podría ayudarte:\n https://www.youtube.com/watch?v=video_notificaciones';
       case 'contactos':
-        return 'Aquí tienes un enlace a un video de YouTube que podría ayudarte:\n https://www.youtube.com/watch?v=video_contactos';
+        return 'Aquí tienes un enlace a un video de YouTube que podría ayudarte:\n https://www.youtube.com/watch?v=bXW_kLuN1Xs&list=PLpsBhfSuwy6epsYySdw-gAiZO5hI-jtdl&index=7&pp=gAQBiAQB';
       case 'servidores':
-        return 'Aquí tienes un enlace a un video de YouTube que podría ayudarte:\n https://www.youtube.com/watch?v=video_servidores';
+        return 'Aquí tienes un enlace a un video de YouTube que podría ayudarte:\n https://www.youtube.com/watch?v=p84hrjsb0vg&list=PLpsBhfSuwy6epsYySdw-gAiZO5hI-jtdl&index=3&pp=gAQBiAQB';
       case 'proyectos':
-        return 'Aquí tienes un enlace a un video de YouTube que podría ayudarte:\n https://www.youtube.com/watch?v=video_proyectos';
+        return 'Aquí tienes un enlace a un video de YouTube que podría ayudarte:\n https://www.youtube.com/watch?v=hMTkeAclVgo&list=PLpsBhfSuwy6epsYySdw-gAiZO5hI-jtdl&index=4&pp=gAQBiAQB';
       case 'tema':
-        return 'Aquí tienes un enlace a un video de YouTube que podría ayudarte:\n https://www.youtube.com/watch?v=video_tema';
+        return 'Aquí tienes un enlace a un video de YouTube que podría ayudarte:\n https://www.youtube.com/watch?v=wyJ0ButqnrQ&list=PLpsBhfSuwy6epsYySdw-gAiZO5hI-jtdl&index=8&pp=gAQBiAQB';
       default:
         return 'Lo siento, no tengo un video para esa pregunta.';
     }
